@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miquel García · Guia de Muntanya Professional</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+:root {
+  --forest: #1a3a1a;
+  --forest-mid: #2d5a27;
+  --forest-light: #4a8a3e;
+  --forest-glow: rgba(74,138,62,0.25);
+  --sky: #3a7ca5;
+  --sky-light: #5ba3cc;
+  --stone: #1c1c1c;
+  --mist: rgba(255,255,255,0.06);
+  --glass: rgba(255,255,255,0.08);
+  --glass-border: rgba(255,255,255,0.14);
+  --glass-strong: rgba(255,255,255,0.13);
+  --cream: #f0ede8;
+  --text-primary: #f0ede8;
+  --text-secondary: rgba(240,237,232,0.65);
+  --text-accent: #8fd97f;
+  --gold: #c9a84c;
+  --danger: #e05a5a;
+  --success: #5acc6e;
+  --bg-dark: #0a0f0a;
+  --bg-mid: #0d1a0d;
+  --gradient-hero: linear-gradient(135deg, #0a1a0a 0%, #0d2010 40%, #0a1520 100%);
+  --shadow-glass: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+  --shadow-glow: 0 0 40px rgba(74,138,62,0.15);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-pill: 50px;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  line-height: 1.7;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ───── ANIMATED BACKGROUND ───── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(45,90,39,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(58,124,165,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(10,25,10,0.8) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ───── SCROLLBAR ───── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--forest-mid); border-radius: 3px; }
+
+/* ───── TOPBAR ───── */
+#topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1100;
+  background: rgba(10,15,10,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 0.6rem 2rem;
+  display: flex; justify-content: flex-end; align-items: center; gap: 10px;
+}
+
+.lang-btn, .theme-btn-top {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 16px; border-radius: var(--radius-pill);
+  background: var(--glass); border: 1px solid var(--glass-border);
+  color: var(--text-secondary); cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500;
+  transition: all 0.3s; white-space: nowrap;
+}
+.lang-btn:hover, .theme-btn-top:hover {
+  background: var(--forest-glow); border-color: var(--forest-light);
+  color: var(--text-accent);
+}
+.lang-btn.active-lang {
+  background: var(--forest-mid); border-color: var(--forest-light);
+  color: white; font-weight: 600;
+}
+
+/* ───── HEADER ───── */
+header {
+  position: relative; z-index: 1;
+  padding: 9rem 2rem 5rem;
+  text-align: center;
+  background:
+    linear-gradient(180deg, rgba(10,15,10,0) 60%, var(--bg-dark) 100%),
+    linear-gradient(135deg, rgba(45,90,39,0.3) 0%, rgba(10,20,10,0.85) 50%, rgba(58,124,165,0.2) 100%),
+    url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&auto=format&fit=crop&q=80') center/cover no-repeat;
+  overflow: hidden;
+}
+
+header::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 120px;
+  background: linear-gradient(to bottom, transparent, var(--bg-dark));
+}
+
+.header-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--glass); backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border); border-radius: var(--radius-pill);
+  padding: 6px 18px; font-size: 0.78rem; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--text-accent);
+  margin-bottom: 1.5rem; animation: fadeInDown 0.8s ease both;
+}
+.header-badge i { font-size: 0.75rem; }
+
+header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -2px;
+  background: linear-gradient(135deg, #fff 0%, var(--text-accent) 50%, var(--sky-light) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  animation: fadeInUp 0.9s ease 0.2s both;
+  margin-bottom: 0.4rem;
+}
+
+header .subtitol {
+  font-family: 'Space Mono', monospace;
+  font-size: clamp(0.75rem, 1.5vw, 0.95rem);
+  letter-spacing: 5px; text-transform: uppercase;
+  color: var(--text-secondary); animation: fadeInUp 0.9s ease 0.4s both;
+  margin-bottom: 2rem;
+}
+
+.header-quote {
+  max-width: 680px; margin: 0 auto;
+  background: var(--glass); backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border); border-left: 3px solid var(--forest-light);
+  border-radius: var(--radius); padding: 1.4rem 2rem;
+  font-style: italic; font-size: 1.05rem; color: var(--text-secondary);
+  animation: fadeInUp 0.9s ease 0.6s both;
+}
+
+/* ───── NAV ───── */
+nav {
+  position: sticky; top: 44px; z-index: 1050;
+  background: rgba(10,15,10,0.9); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--glass-border);
+  display: flex; justify-content: center; flex-wrap: wrap;
+  padding: 0 1rem;
+}
+
+.tab-button {
+  padding: 1rem 1.4rem; border: none; background: none; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.82rem;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text-secondary); border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+.tab-button:hover { color: var(--text-accent); }
+.tab-button.active { color: var(--text-accent); border-bottom-color: var(--forest-light); }
+
+/* ───── CONTAINER ───── */
+.container {
+  max-width: 1120px; margin: 0 auto; padding: 3rem 1.5rem;
+  position: relative; z-index: 1;
+}
+
+/* ───── GLASS CARD ───── */
+.glass-card {
+  background: var(--glass-strong);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-glass);
+  padding: 3rem;
+}
+
+/* ───── TAB CONTENT ───── */
+.tab-content { display: none; }
+.tab-content.active {
+  display: block;
+  animation: slideUpFade 0.55s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+
+/* ───── SECTION TITLE ───── */
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--text-primary), var(--text-accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+.section-subtitle {
+  color: var(--text-secondary); margin-bottom: 2.5rem; font-size: 1rem;
+}
+.title-line {
+  width: 60px; height: 3px;
+  background: linear-gradient(90deg, var(--forest-light), var(--sky));
+  border-radius: 2px; margin-bottom: 2rem;
+}
+
+/* ───── GRID ───── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
+@media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; gap: 2rem; } }
+
+/* ───── PROFILE IMAGE ───── */
+.profile-img-wrap {
+  position: relative;
+}
+.profile-img-wrap::before {
+  content: '';
+  position: absolute; inset: -2px;
+  background: linear-gradient(135deg, var(--forest-mid), var(--sky), var(--forest-light));
+  border-radius: 20px; z-index: 0;
+}
+.profile-img {
+  position: relative; z-index: 1;
+  width: 100%; aspect-ratio: 3/4; object-fit: cover;
+  border-radius: 18px; display: block; cursor: zoom-in;
+  transition: transform 0.4s ease;
+  background: var(--forest) url('https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=600&auto=format&fit=crop') center/cover;
+}
+.profile-img:hover { transform: scale(1.02); }
+
+/* ───── ICONS ROW ───── */
+.icons-row { display: flex; gap: 1.5rem; margin-top: 2rem; }
+.icon-badge {
+  width: 56px; height: 56px; border-radius: 14px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; transition: all 0.3s;
+}
+.icon-badge:hover { background: var(--forest-glow); border-color: var(--forest-light); transform: translateY(-3px); }
+
+/* ───── SKILLS ───── */
+.skill-item { margin-bottom: 1.6rem; }
+.skill-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+.skill-track { height: 6px; background: var(--glass); border-radius: 3px; overflow: hidden; }
+.skill-fill {
+  height: 100%; border-radius: 3px; width: 0;
+  background: linear-gradient(90deg, var(--forest-mid), var(--text-accent));
+  transition: width 1.4s cubic-bezier(0.25,0.8,0.25,1) 0.3s;
+}
+#sobre-mi.active .skill-fill { width: var(--w); }
+
+/* ───── STAT CHIPS ───── */
+.stat-chips { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+.chip {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill); padding: 8px 18px;
+  font-size: 0.85rem; font-weight: 500; color: var(--text-accent);
+}
+.chip i { color: var(--forest-light); }
+
+/* ───── PROJECT CARDS ───── */
+.project-card {
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: var(--radius); padding: 2.5rem;
+  margin-bottom: 2rem; transition: all 0.3s;
+  position: relative; overflow: hidden;
+}
+.project-card::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 4px; height: 100%;
+  background: linear-gradient(180deg, var(--forest-light), var(--sky));
+}
+.project-card:hover {
+  background: var(--glass-strong); transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3), var(--shadow-glow);
+}
+.project-card h3 {
+  font-family: 'Playfair Display', serif; font-size: 1.3rem;
+  color: var(--text-accent); margin-bottom: 0.8rem;
+}
+.project-card p { color: var(--text-secondary); font-size: 0.95rem; }
+.project-img {
+  width: 100%; height: 220px; object-fit: cover; border-radius: var(--radius-sm);
+  background: var(--forest) url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600') center/cover;
+  margin-top: 1.5rem; transition: transform 0.4s; cursor: zoom-in;
+}
+.project-img:hover { transform: scale(1.02); }
+
+/* ───── TESTIMONIALS ───── */
+.testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+.testimonial-card {
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: var(--radius); padding: 2rem; transition: all 0.3s;
+}
+.testimonial-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+.testimonial-header { display: flex; align-items: center; gap: 14px; margin-bottom: 1rem; }
+.avatar {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--forest-mid), var(--sky));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: white;
+  flex-shrink: 0;
+}
+.avatar-info h4 { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+.avatar-info p { font-size: 0.8rem; color: var(--text-secondary); }
+.stars { color: var(--gold); font-size: 0.85rem; margin-bottom: 0.8rem; }
+.testimonial-text { color: var(--text-secondary); font-style: italic; font-size: 0.92rem; line-height: 1.7; }
+
+/* ───── FAQ ───── */
+.faq-item {
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm); margin-bottom: 1rem; overflow: hidden;
+  transition: all 0.3s;
+}
+.faq-item:hover { border-color: rgba(74,138,62,0.3); }
+.faq-q {
+  padding: 1.3rem 1.6rem; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  font-weight: 600; font-size: 0.95rem; color: var(--text-primary);
+  user-select: none; transition: color 0.3s;
+}
+.faq-q:hover { color: var(--text-accent); }
+.faq-q i { color: var(--forest-light); transition: transform 0.35s; flex-shrink: 0; margin-left: 1rem; }
+.faq-item.open .faq-q i { transform: rotate(180deg); }
+.faq-a {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.4s ease;
+  border-top: 1px solid transparent;
+}
+.faq-item.open .faq-a {
+  max-height: 400px; padding: 0 1.6rem 1.5rem;
+  border-top-color: var(--glass-border);
+}
+.faq-a p { color: var(--text-secondary); font-size: 0.92rem; line-height: 1.75; padding-top: 1rem; }
+
+/* ───── PRICING TABLE ───── */
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+.price-card {
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: var(--radius); padding: 2rem; text-align: center;
+  transition: all 0.3s; position: relative; overflow: hidden;
+}
+.price-card.featured {
+  background: linear-gradient(135deg, rgba(45,90,39,0.3), rgba(74,138,62,0.15));
+  border-color: var(--forest-light);
+  box-shadow: 0 0 30px rgba(74,138,62,0.2);
+}
+.price-card.featured::before {
+  content: attr(data-badge);
+  position: absolute; top: 12px; right: -20px;
+  background: var(--forest-mid); color: white; font-size: 0.7rem;
+  font-weight: 700; padding: 4px 30px; transform: rotate(35deg);
+  letter-spacing: 1px; white-space: nowrap;
+}
+.price-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+.price-icon { font-size: 2.2rem; margin-bottom: 1rem; }
+.price-name { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--text-accent); margin-bottom: 0.3rem; }
+.price-amount { font-size: 2.5rem; font-weight: 700; color: white; }
+.price-amount small { font-size: 1rem; color: var(--text-secondary); font-weight: 400; }
+.price-desc { color: var(--text-secondary); font-size: 0.85rem; margin: 0.8rem 0 1.2rem; }
+.price-features { list-style: none; text-align: left; }
+.price-features li { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 0.6rem; }
+.price-features li i { color: var(--text-accent); font-size: 0.75rem; flex-shrink: 0; }
+
+/* ───── MAP ───── */
+.map-wrap { border-radius: var(--radius); overflow: hidden; height: 480px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-glass); }
+#map { width: 100%; height: 100%; }
+
+/* ───── CV / VIDEO ───── */
+.cv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+@media (max-width: 768px) { .cv-grid { grid-template-columns: 1fr; } }
+.cv-box {
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: var(--radius); padding: 2rem; text-align: center;
+}
+.cv-box h3 { font-family: 'Playfair Display', serif; color: var(--text-accent); margin-bottom: 1rem; }
+.video-wrap { border-radius: var(--radius-sm); overflow: hidden; background: #000; }
+video { width: 100%; display: block; }
+.btn-dl {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, var(--forest-mid), var(--forest-light));
+  color: white; padding: 0.9rem 2rem; border-radius: var(--radius-pill);
+  text-decoration: none; font-weight: 600; font-size: 0.95rem;
+  box-shadow: 0 6px 20px rgba(45,90,39,0.35);
+  transition: all 0.3s; margin-top: 1.5rem;
+}
+.btn-dl:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(45,90,39,0.45); }
+
+/* ───── CONTACT FORM ───── */
+.contact-form { max-width: 620px; margin: 0 auto; }
+.form-group { margin-bottom: 1.2rem; }
+.form-group input, .form-group textarea {
+  width: 100%;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm); padding: 14px 18px;
+  color: var(--text-primary); font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem; transition: border-color 0.3s;
+}
+.form-group input:focus, .form-group textarea:focus {
+  border-color: var(--forest-light); outline: none;
+  box-shadow: 0 0 0 3px rgba(74,138,62,0.12);
+}
+.form-group input::placeholder, .form-group textarea::placeholder { color: var(--text-secondary); }
+.form-group textarea { height: 130px; resize: vertical; }
+.btn-send {
+  width: 100%; padding: 15px;
+  background: linear-gradient(135deg, var(--forest-mid), var(--forest-light));
+  color: white; border: none; border-radius: var(--radius-pill);
+  font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s;
+  font-family: 'DM Sans', sans-serif; letter-spacing: 1px;
+}
+.btn-send:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(45,90,39,0.4); }
+
+/* ───── DESIGN TAB ───── */
+.design-card {
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: var(--radius); padding: 2rem; margin-bottom: 1.5rem;
+}
+.color-swatch { display: flex; gap: 12px; flex-wrap: wrap; margin: 1rem 0; }
+.swatch { display: flex; align-items: center; gap: 10px; }
+.swatch-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--glass-border); }
+.swatch span { font-size: 0.85rem; color: var(--text-secondary); }
+
+/* ───── FOOTER ───── */
+footer {
+  background: rgba(5,10,5,0.95); border-top: 1px solid var(--glass-border);
+  padding: 4rem 2rem 2.5rem; text-align: center; margin-top: 4rem;
+  position: relative; z-index: 1;
+}
+footer h2 { font-family: 'Playfair Display', serif; font-size: 2.4rem; color: var(--text-primary); margin-bottom: 0.3rem; }
+footer p { color: var(--text-secondary); }
+.contact-links { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin: 2rem 0; }
+.contact-link {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill); padding: 12px 24px;
+  color: var(--text-primary); text-decoration: none; transition: all 0.3s;
+}
+.contact-link:hover { background: var(--forest-glow); border-color: var(--forest-light); color: var(--text-accent); transform: translateY(-3px); }
+.footer-copy { font-size: 0.82rem; color: rgba(240,237,232,0.3); margin-top: 2rem; }
+
+/* ───── FLOAT WHATSAPP ───── */
+.float-wa {
+  position: fixed; bottom: 30px; right: 30px; z-index: 2000;
+  width: 58px; height: 58px; border-radius: 50%;
+  background: #25d366; color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.7rem; text-decoration: none; box-shadow: 0 8px 24px rgba(37,211,102,0.35);
+  transition: all 0.3s; animation: pulse-wa 2.5s infinite;
+}
+.float-wa:hover { transform: scale(1.12); box-shadow: 0 12px 32px rgba(37,211,102,0.5); }
+@keyframes pulse-wa {
+  0%,100% { box-shadow: 0 8px 24px rgba(37,211,102,0.35); }
+  50% { box-shadow: 0 8px 40px rgba(37,211,102,0.6); }
+}
+
+/* ───── ADMIN ACCESS ───── */
+.admin-gear {
+  position: fixed; bottom: 100px; right: 32px; z-index: 1000;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: rgba(255,255,255,0.25); font-size: 1rem;
+  transition: all 0.3s;
+}
+.admin-gear:hover { background: var(--forest-mid); color: white; border-color: var(--forest-light); transform: rotate(90deg); }
+
+/* ───── LIGHTBOX ───── */
+#lightbox {
+  display: none; position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0,0,0,0.92); backdrop-filter: blur(8px);
+  justify-content: center; align-items: center; cursor: zoom-out;
+}
+#lightbox.show { display: flex; }
+#lightbox img { max-width: 90vw; max-height: 90vh; border-radius: var(--radius); animation: zoomIn 0.3s ease; }
+.lb-close { position: absolute; top: 24px; right: 30px; color: white; font-size: 2.2rem; cursor: pointer; }
+
+/* ───── ADMIN LOGIN ───── */
+#admin-overlay {
+  display: none; position: fixed; inset: 0; z-index: 8500;
+  background: rgba(0,0,0,0.88); backdrop-filter: blur(12px);
+  justify-content: center; align-items: center;
+}
+#admin-overlay.show { display: flex; }
+.admin-login-box {
+  background: rgba(15,25,15,0.95); border: 1px solid var(--glass-border);
+  border-radius: 20px; padding: 3rem; max-width: 420px; width: 92%;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6), var(--shadow-glow);
+  animation: zoomIn 0.35s ease;
+}
+.admin-login-box h2 { font-family: 'Playfair Display', serif; font-size: 1.7rem; color: var(--text-accent); text-align: center; margin-bottom: 0.3rem; }
+.admin-login-box p { color: var(--text-secondary); text-align: center; margin-bottom: 2rem; font-size: 0.9rem; }
+.admin-login-box input {
+  width: 100%; padding: 13px 16px; border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm); background: var(--glass);
+  color: var(--text-primary); font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+  margin-bottom: 12px; transition: border-color 0.3s;
+}
+.admin-login-box input:focus { border-color: var(--forest-light); outline: none; }
+.admin-login-box input::placeholder { color: var(--text-secondary); }
+.btn-login {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, var(--forest-mid), var(--forest-light));
+  color: white; border: none; border-radius: var(--radius-pill);
+  font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.3s;
+  font-family: 'DM Sans', sans-serif; margin-bottom: 10px;
+}
+.btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(45,90,39,0.4); }
+.btn-cancel {
+  width: 100%; padding: 12px; background: var(--glass);
+  border: 1px solid var(--glass-border); color: var(--text-secondary);
+  border-radius: var(--radius-pill); cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem; transition: all 0.3s;
+}
+.btn-cancel:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+#login-err { color: var(--danger); text-align: center; font-size: 0.88rem; margin-top: -5px; margin-bottom: 10px; display: none; }
+
+/* ───── ADMIN PANEL ───── */
+#admin-panel {
+  display: none; position: fixed; inset: 0; z-index: 8000;
+  background: #07100a; overflow-y: auto;
+}
+#admin-panel.show { display: flex; flex-direction: column; }
+
+.admin-topbar {
+  background: rgba(10,20,10,0.98); border-bottom: 1px solid rgba(74,138,62,0.25);
+  padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 10;
+}
+.admin-topbar-title { display: flex; align-items: center; gap: 12px; }
+.admin-topbar-title h1 { font-family: 'Playfair Display', serif; color: var(--text-accent); font-size: 1.2rem; }
+.admin-topbar-title span { color: var(--text-secondary); font-size: 0.82rem; }
+.btn-tb {
+  padding: 8px 16px; border: none; border-radius: var(--radius-sm);
+  cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: all 0.3s;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-tb-view { background: rgba(58,124,165,0.25); color: var(--sky-light); border: 1px solid rgba(58,124,165,0.3); }
+.btn-tb-view:hover { background: rgba(58,124,165,0.4); }
+.btn-tb-logout { background: rgba(224,90,90,0.2); color: #f09090; border: 1px solid rgba(224,90,90,0.3); }
+.btn-tb-logout:hover { background: rgba(224,90,90,0.35); }
+
+.admin-body { display: flex; flex: 1; min-height: 0; }
+
+.admin-sidebar {
+  width: 230px; min-width: 230px; background: rgba(8,16,8,0.95);
+  border-right: 1px solid rgba(74,138,62,0.15); padding: 1.5rem 0;
+  overflow-y: auto;
+}
+.sidebar-label {
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+  color: rgba(74,138,62,0.6); padding: 0 1.4rem; margin: 1.2rem 0 0.5rem;
+}
+.sidebar-link {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0.75rem 1.4rem; color: rgba(240,237,232,0.55);
+  cursor: pointer; font-size: 0.9rem; font-weight: 500;
+  transition: all 0.25s; position: relative; border-left: 3px solid transparent;
+}
+.sidebar-link:hover { color: var(--text-accent); background: rgba(74,138,62,0.08); }
+.sidebar-link.active { color: var(--text-accent); background: rgba(74,138,62,0.12); border-left-color: var(--forest-light); }
+.sidebar-link i { width: 18px; text-align: center; font-size: 0.9rem; }
+.badge-count {
+  margin-left: auto; background: var(--danger); color: white;
+  border-radius: 10px; padding: 2px 7px; font-size: 0.7rem; font-weight: 700;
+}
+
+.admin-content { flex: 1; padding: 2.5rem; overflow-y: auto; }
+.admin-section { display: none; animation: fadeIn 0.4s ease; }
+.admin-section.active { display: block; }
+
+/* Admin cards */
+.a-card {
+  background: rgba(12,22,12,0.8); border: 1px solid rgba(74,138,62,0.2);
+  border-radius: var(--radius); padding: 2rem; margin-bottom: 1.5rem;
+}
+.a-card h3 { color: var(--text-accent); font-size: 1rem; font-weight: 600; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(74,138,62,0.15); padding-bottom: 1rem; }
+
+/* Stats */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.stat-box {
+  background: rgba(12,22,12,0.7); border: 1px solid rgba(74,138,62,0.2);
+  border-radius: var(--radius); padding: 1.5rem; text-align: center;
+}
+.stat-icon { font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--sky-light); }
+.stat-num { font-size: 2.2rem; font-weight: 800; color: white; font-family: 'Space Mono', monospace; }
+.stat-lbl { color: rgba(240,237,232,0.45); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Admin form */
+.a-form-group { margin-bottom: 1.2rem; }
+.a-form-group label { display: block; color: var(--text-accent); font-size: 0.83rem; font-weight: 600; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.8px; }
+.a-form-group input, .a-form-group textarea, .a-form-group select {
+  width: 100%; background: rgba(8,16,8,0.8); border: 1px solid rgba(74,138,62,0.25);
+  border-radius: var(--radius-sm); padding: 12px 14px; color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif; font-size: 0.92rem; transition: border-color 0.3s;
+}
+.a-form-group input:focus, .a-form-group textarea:focus, .a-form-group select:focus { border-color: var(--forest-light); outline: none; }
+.a-form-group textarea { height: 90px; resize: vertical; }
+.a-form-group select option { background: #0a1a0a; }
+
+.btn-save {
+  background: linear-gradient(135deg, var(--forest-mid), var(--forest-light));
+  color: white; border: none; padding: 11px 24px;
+  border-radius: var(--radius-sm); cursor: pointer; font-weight: 700;
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem; transition: all 0.3s;
+}
+.btn-save:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(45,90,39,0.4); }
+.btn-danger {
+  background: rgba(224,90,90,0.2); color: #f09090;
+  border: 1px solid rgba(224,90,90,0.3); padding: 9px 18px;
+  border-radius: var(--radius-sm); cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; transition: all 0.3s;
+}
+.btn-danger:hover { background: rgba(224,90,90,0.35); }
+
+/* Message list */
+.msg-item {
+  background: rgba(8,16,8,0.6); border: 1px solid rgba(74,138,62,0.15);
+  border-radius: var(--radius-sm); padding: 1.2rem 1.5rem;
+  margin-bottom: 1rem; transition: all 0.25s;
+}
+.msg-item.unread { border-left: 3px solid var(--forest-light); }
+.msg-item:hover { background: rgba(12,22,12,0.8); }
+.msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+.msg-from { font-weight: 600; color: var(--text-accent); font-size: 0.92rem; }
+.msg-date { font-size: 0.78rem; color: var(--text-secondary); font-family: 'Space Mono', monospace; }
+.msg-subject { font-size: 0.88rem; color: var(--text-primary); margin-bottom: 0.4rem; }
+.msg-preview { font-size: 0.83rem; color: var(--text-secondary); }
+.msg-actions { display: flex; gap: 8px; margin-top: 0.8rem; }
+.btn-reply, .btn-delete {
+  padding: 6px 14px; border-radius: var(--radius-sm);
+  cursor: pointer; font-size: 0.8rem; font-family: 'DM Sans', sans-serif; transition: all 0.3s;
+}
+.btn-reply { background: rgba(74,138,62,0.2); border: 1px solid rgba(74,138,62,0.3); color: var(--text-accent); }
+.btn-reply:hover { background: rgba(74,138,62,0.35); }
+.btn-delete { background: rgba(224,90,90,0.15); border: 1px solid rgba(224,90,90,0.25); color: #f09090; }
+.btn-delete:hover { background: rgba(224,90,90,0.3); }
+
+/* Testimonial admin items */
+.test-item {
+  background: rgba(8,16,8,0.6); border: 1px solid rgba(74,138,62,0.15);
+  border-radius: var(--radius-sm); padding: 1.2rem; margin-bottom: 0.8rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.test-name { font-weight: 600; color: var(--text-accent); font-size: 0.9rem; }
+.test-stars { color: var(--gold); font-size: 0.8rem; }
+.test-preview { color: var(--text-secondary); font-size: 0.82rem; }
+
+/* Toast */
+#toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+  background: rgba(10,22,10,0.95); border: 1px solid var(--forest-light);
+  color: var(--text-accent); padding: 12px 28px; border-radius: var(--radius-pill);
+  font-size: 0.9rem; font-weight: 500; z-index: 99999;
+  display: none; animation: fadeInUp 0.3s ease;
+  backdrop-filter: blur(12px); box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+}
+
+/* Admin badge */
+#admin-badge {
+  display: none; position: fixed; top: 58px; right: 16px;
+  background: var(--forest-mid); border: 1px solid var(--forest-light);
+  color: white; padding: 6px 14px; border-radius: var(--radius-pill);
+  font-size: 0.75rem; font-weight: 700; z-index: 1200; cursor: pointer;
+  letter-spacing: 1px;
+}
+#admin-badge.show { display: block; }
+
+/* ───── ANIMATIONS ───── */
+@keyframes slideUpFade { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeInDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeInUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes zoomIn { from { opacity:0; transform:scale(0.88); } to { opacity:1; transform:scale(1); } }
+
+/* ───── RESPONSIVE ───── */
+@media (max-width: 640px) {
+  .glass-card { padding: 1.8rem; }
+  header { padding: 8rem 1.5rem 4rem; }
+  .admin-sidebar { width: 60px; min-width: 60px; }
+  .sidebar-label, .sidebar-link span { display: none; }
+  .sidebar-link { justify-content: center; padding: 1rem 0; }
+  .admin-content { padding: 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR: LANG + THEME -->
+<div id="topbar">
+  <button class="lang-btn active-lang" id="btn-ca" onclick="setLang('ca')">🏴󠁥󠁳󠁣󠁴󠁿 CA</button>
+  <button class="lang-btn" id="btn-es" onclick="setLang('es')">🇪🇸 ES</button>
+  <button class="lang-btn" id="btn-en" onclick="setLang('en')">🇬🇧 EN</button>
+  <button class="lang-btn" id="btn-fr" onclick="setLang('fr')">🇫🇷 FR</button>
+  <button class="lang-btn" id="btn-it" onclick="setLang('it')">🇮🇹 IT</button>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-badge"><i class="fa-solid fa-mountain-sun"></i> <span data-i="badge">Guia de Muntanya Professional</span></div>
+  <h1 id="site-name">MIQUEL GARCÍA</h1>
+  <p class="subtitol" data-i="subtitle">GUIA DE MUNTANYA I LLEURE · SANT CELONI</p>
+  <div class="header-quote" data-i="quote">«Sóc un professional compromès, amb vocació de servei i capacitat per generar confiança i aportar valor en cada sortida.»</div>
+</header>
+
+<!-- NAV -->
+<nav>
+  <button class="tab-button active" onclick="openTab(event,'inici')" data-i="nav_home">INICI</button>
+  <button class="tab-button" onclick="openTab(event,'sobre')" data-i="nav_about">SOBRE MI</button>
+  <button class="tab-button" onclick="openTab(event,'portfoli')" data-i="nav_portfolio">PORTFOLI</button>
+  <button class="tab-button" onclick="openTab(event,'mapa')" data-i="nav_map">MAPA</button>
+  <button class="tab-button" onclick="openTab(event,'testimonials')" data-i="nav_test">TESTIMONIALS</button>
+  <button class="tab-button" onclick="openTab(event,'faq')" data-i="nav_faq">FAQ</button>
+  <button class="tab-button" onclick="openTab(event,'preus')" data-i="nav_prices">PREUS</button>
+  <button class="tab-button" onclick="openTab(event,'cv')" data-i="nav_cv">CV & VÍDEO</button>
+  <button class="tab-button" onclick="openTab(event,'disseny')" data-i="nav_design">DISSENY</button>
+  <button class="tab-button" onclick="openTab(event,'contacte')" data-i="nav_contact">CONTACTE</button>
+</nav>
+
+<!-- MAIN CONTAINER -->
+<div class="container">
+
+  <!-- ── INICI ── -->
+  <div id="inici" class="tab-content active">
+    <div class="glass-card">
+      <div class="grid-2">
+        <div>
+          <p class="section-subtitle" data-i="home_welcome_label">Benvingut al meu espai professional</p>
+          <h2 class="section-title" data-i="home_title">Hola, soc en Miquel.</h2>
+          <div class="title-line"></div>
+          <p data-i="home_p1">Benvinguts a la meva finestra digital al món del guiatge de muntanya. En aquest espai vull mostrar-vos la meva passió pel medi natural i el meu rigor professional en la conducció de grups.</p>
+          <br>
+          <p data-i="home_p2">La meva formació al Ginebró m'ha permès combinar la tècnica rigorosa de seguretat amb les habilitats socials necessàries per fer de cada sortida una experiència autèntica i inoblidable.</p>
+          <div class="stat-chips">
+            <div class="chip"><i class="fa-solid fa-check"></i> <span data-i="chip1">+50 sortides</span></div>
+            <div class="chip"><i class="fa-solid fa-users"></i> <span data-i="chip2">+300 participants</span></div>
+            <div class="chip"><i class="fa-solid fa-star"></i> <span data-i="chip3">5★ mitjana</span></div>
+          </div>
+          <div class="icons-row">
+            <div class="icon-badge">🏔️</div>
+            <div class="icon-badge">🧭</div>
+            <div class="icon-badge">🚵</div>
+            <div class="icon-badge">🌿</div>
+          </div>
+        </div>
+        <div class="profile-img-wrap">
+          <img class="profile-img" 
+            src="fotopro.jpg" alt="Miquel García"
+            onerror="this.src='https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=600&auto=format&fit=crop'"
+            onclick="openLightbox(this)">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SOBRE MI ── -->
+  <div id="sobre" class="tab-content">
+    <div class="glass-card">
+      <p class="section-subtitle" data-i="about_sub">Qui soc i què m'impulsa</p>
+      <h2 class="section-title" data-i="about_title">Sobre Mi</h2>
+      <div class="title-line"></div>
+      <div class="grid-2">
+        <div>
+          <p data-i="about_p1">Soc un noi treballador, professional i dedicat, amb una gran habilitat natural per relacionar-me amb les persones, generant un clima de confiança i comoditat des del primer moment.</p>
+          <br>
+          <p data-i="about_p2">M'agrada cuidar els detalls i assegurar-me que tothom gaudeixi de l'activitat amb la màxima seguretat i satisfacció. La muntanya no és només el meu lloc de treball, és la meva passió.</p>
+          <br>
+          <blockquote style="border-left:3px solid var(--forest-light);padding-left:1.2rem;margin:1.5rem 0;font-style:italic;color:var(--text-accent);font-family:'Playfair Display',serif;font-size:1.1rem;" data-i="about_quote">
+            "Crear la meva pròpia empresa de guiatge i lleure per liderar el sector amb els meus propis valors."
+          </blockquote>
+          <div class="stat-chips">
+            <div class="chip"><i class="fa-solid fa-language"></i> <span data-i="about_lang">Anglès C1 · Castellà nadiu</span></div>
+            <div class="chip"><i class="fa-solid fa-graduation-cap"></i> <span data-i="about_edu">Formació al Ginebró</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="skill-item"><div class="skill-header"><span data-i="sk1">Guiatge de Grups</span><span>95%</span></div><div class="skill-track"><div class="skill-fill" style="--w:95%"></div></div></div>
+          <div class="skill-item"><div class="skill-header"><span data-i="sk2">Seguretat en Muntanya</span><span>90%</span></div><div class="skill-track"><div class="skill-fill" style="--w:90%"></div></div></div>
+          <div class="skill-item"><div class="skill-header"><span data-i="sk3">Habilitats Socials</span><span>100%</span></div><div class="skill-track"><div class="skill-fill" style="--w:100%"></div></div></div>
+          <div class="skill-item"><div class="skill-header"><span data-i="sk4">Planificació de Rutes</span><span>88%</span></div><div class="skill-track"><div class="skill-fill" style="--w:88%"></div></div></div>
+          <div class="skill-item"><div class="skill-header"><span data-i="sk5">Primers Auxilis</span><span>85%</span></div><div class="skill-track"><div class="skill-fill" style="--w:85%"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PORTFOLI ── -->
+  <div id="portfoli" class="tab-content">
+    <div class="glass-card">
+      <p class="section-subtitle" data-i="port_sub">Experiències i projectes destacats</p>
+      <h2 class="section-title" data-i="port_title">Portfoli</h2>
+      <div class="title-line"></div>
+
+      <div class="project-card">
+        <div class="grid-2">
+          <div>
+            <h3>🥾 <span data-i="proj1_title">Pràctiques al Ginebró</span></h3>
+            <p data-i="proj1_desc">Col·laboració activa en la gestió i conducció de grups escolars i d'adults en entorns de muntanya mitjana al Montseny i el Pirineu.</p>
+            <br><p><strong style="color:var(--text-accent)" data-i="role_label">Funció:</strong> <span data-i="proj1_role">Co-guia i suport logístic</span></p>
+          </div>
+          <img class="project-img" src="apeu1.jpg" alt="Pràctiques"
+            onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&auto=format&fit=crop'"
+            onclick="openLightbox(this)">
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="grid-2">
+          <div>
+            <h3>🗺️ <span data-i="proj2_title">Disseny de Rutes al Montseny</span></h3>
+            <p data-i="proj2_desc">Creació d'itineraris personalitzats basats en la història local, la biodiversitat del Parc Natural i les necessitats específiques de cada grup.</p>
+            <br><p><strong style="color:var(--text-accent)" data-i="role_label">Funció:</strong> <span data-i="proj2_role">Dissenyador d'itineraris</span></p>
+          </div>
+          <img class="project-img" src="apeu2.jpg" alt="Rutes"
+            onerror="this.src='https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=600&auto=format&fit=crop'"
+            onclick="openLightbox(this)">
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="grid-2">
+          <div>
+            <h3>🚵 <span data-i="proj3_title">Sortida Tècnica BTT</span></h3>
+            <p data-i="proj3_desc">Gestió d'un grup de ciclistes per terreny irregular amb fort component de seguretat mecànica i física, mantenint un ritme constant i motivador.</p>
+            <br><p><strong style="color:var(--text-accent)" data-i="role_label">Funció:</strong> <span data-i="proj3_role">Guia líder del grup BTT</span></p>
+          </div>
+          <img class="project-img" src="bici.jpg" alt="BTT"
+            onerror="this.src='https://images.unsplash.com/photo-1544191173-4f714ca0263b?w=600&auto=format&fit=crop'"
+            onclick="openLightbox(this)">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAPA ── -->
+  <div id="mapa" class="tab-content">
+    <div class="glass-card">
+      <p class="section-subtitle" data-i="map_sub">On opero habitualment</p>
+      <h2 class="section-title" data-i="map_title">Mapa de Zones</h2>
+      <div class="title-line"></div>
+      <p data-i="map_desc">Descobreix els llocs més importants on he realitzat les meves activitats de guiatge. Fes clic als marcadors per veure els detalls.</p>
+      <br>
+      <div class="map-wrap"><div id="map"></div></div>
+    </div>
+  </div>
+
+  <!-- ── TESTIMONIALS ── -->
+  <div id="testimonials" class="tab-content">
+    <div class="glass-card">
+      <p class="section-subtitle" data-i="test_sub">El que diuen els meus clients</p>
+      <h2 class="section-title" data-i="test_title">Testimonials</h2>
+      <div class="title-line"></div>
+      <div class="testimonials-grid" id="testimonials-container">
+        <!-- Generated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FAQ ── -->
+  <div id="faq" class="tab-content">
+    <div class="glass-card">
+      <p class="section-subtitle" data-i="faq_sub">Tot el que necessites saber</p>
+      <h2 class="section-title" data-i="faq_title">Preguntes Freqüents</h2>
+      <div class="title-line"></div>
+      <div id="faq-container"></div>
+    </div>
+  </div>
+
+  <!-- ── PREUS ── -->
+  <div id="preus" class="tab-content">
+    <div class="glass-card">
+      <p class="section-subtitle" data-i="price_sub">Transparent i adaptat a cada necessitat</p>
+      <h2 class="section-title" data-i="price_title">Tarifes i Serveis</h2>
+      <div class="title-line"></div>
+      <p data-i="price_desc">Tots els preus inclouen guiatge professional, material de seguretat bàsic i planificació personalitzada de la ruta. IVA inclòs.</p>
+      <div class="pricing-grid" id="pricing-container"></div>
+    </div>
+  </div>
+
+  <!-- ── CV ── -->
+  <div id="cv" class="tab-content">
+    <div class="glass-card">
+      <p class="section-subtitle" data-i="cv_sub">Documents i presentació personal</p>
+      <h2 class="section-title" data-i="cv_title">CV i Vídeo</h2>
+      <div class="title-line"></div>
+      <div class="cv-grid">
+        <div class="cv-box">
+          <h3><i class="fa-solid fa-file-pdf" style="color:#e74c3c"></i> <span data-i="cv_doc">Documentació</span></h3>
+          <p data-i="cv_doc_desc">Accedeix a la meva formació al Ginebró, el meu domini d'idiomes (Anglès C1) i la meva experiència en voluntariats.</p>
+          <a href="MIQUEL_GARCIA_curriculum.pdf" target="_blank" class="btn-dl"><i class="fa-solid fa-download"></i> <span data-i="cv_dl">DESCARREGAR CV</span></a>
+        </div>
+        <div class="cv-box">
+          <h3><i class="fa-solid fa-circle-play" style="color:var(--sky-light)"></i> <span data-i="cv_video">Vídeo Presentació</span></h3>
+          <div class="video-wrap">
+            <video controls preload="metadata" playsinline>
+              <source src="videocv.mp4" type="video/mp4">
+              <span data-i="cv_no_video">El teu navegador no suporta el vídeo.</span>
+            </video>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DISSENY ── -->
+  <div id="disseny" class="tab-content">
+    <div class="glass-card">
+      <p class="section-subtitle" data-i="design_sub">Les decisions estètiques del projecte</p>
+      <h2 class="section-title" data-i="design_title">Filosofia de Disseny</h2>
+      <div class="title-line"></div>
+      <div class="grid-2">
+        <div>
+          <div class="design-card">
+            <h3 style="color:var(--text-accent);margin-bottom:0.8rem;font-family:'Playfair Display',serif" data-i="design_color_title">Psicologia del Color</h3>
+            <div class="color-swatch">
+              <div class="swatch"><div class="swatch-dot" style="background:#2d5a27"></div><span data-i="color1">Verd Bosc — Natura i creixement</span></div>
+              <div class="swatch"><div class="swatch-dot" style="background:#3a7ca5"></div><span data-i="color2">Blau Cel — Confiança i professionalitat</span></div>
+              <div class="swatch"><div class="swatch-dot" style="background:#4a8a3e"></div><span data-i="color3">Verd Clar — Energia i vitalitat</span></div>
+              <div class="swatch"><div class="swatch-dot" style="background:#f0ede8"></div><span data-i="color4">Crema — Calidesa i accessibilitat</span></div>
+            </div>
+          </div>
+          <div class="design-card">
+            <h3 style="color:var(--text-accent);margin-bottom:0.8rem;font-family:'Playfair Display',serif" data-i="design_glass_title">Glassmorphism</h3>
+            <p style="color:var(--text-secondary);font-size:0.92rem" data-i="design_glass_desc">El disseny "Glassmorphism" crea una sensació de profunditat i modernitat. Els elements translúcids amb backdrop-filter blur imiten el vidre mat, combinant elegància i llegibilitat en un entorn fosc inspirat en la natura.</p>
+          </div>
+        </div>
+        <div>
+          <div class="design-card">
+            <h3 style="color:var(--text-accent);margin-bottom:0.8rem;font-family:'Playfair Display',serif" data-i="design_typo_title">Tipografia</h3>
+            <p style="font-family:'Playfair Display',serif;font-size:2rem;color:var(--text-primary);margin-bottom:0.3rem">Playfair Display</p>
+            <p style="color:var(--text-secondary);font-size:0.82rem;margin-bottom:1.2rem" data-i="typo1_desc">Títols — Elegant i amb caràcter</p>
+            <p style="font-family:'DM Sans',sans-serif;font-size:1.1rem;color:var(--text-primary);margin-bottom:0.3rem">DM Sans Regular</p>
+            <p style="color:var(--text-secondary);font-size:0.82rem;margin-bottom:1.2rem" data-i="typo2_desc">Cos de text — Llegibilitat màxima</p>
+            <p style="font-family:'Space Mono',monospace;font-size:0.95rem;color:var(--text-accent);margin-bottom:0.3rem">Space Mono</p>
+            <p style="color:var(--text-secondary);font-size:0.82rem" data-i="typo3_desc">Dades i etiquetes — Precisió tècnica</p>
+          </div>
+          <div class="design-card">
+            <h3 style="color:var(--text-accent);margin-bottom:0.8rem;font-family:'Playfair Display',serif" data-i="design_arch_title">Arquitectura Web</h3>
+            <p style="color:var(--text-secondary);font-size:0.92rem" data-i="design_arch_desc">Interfície SPA (Single Page Application) amb navegació per pestanyes, sense recàrregues. Animacions CSS subtils, mapa interactiu Leaflet, formulari de contacte i panell d'administrador integrat.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONTACTE ── -->
+  <div id="contacte" class="tab-content">
+    <div class="glass-card" style="text-align:center">
+      <p class="section-subtitle" data-i="contact_sub">Parlem del teu proper repte</p>
+      <h2 class="section-title" data-i="contact_title">Contacte</h2>
+      <div class="title-line" style="margin:0 auto 2rem"></div>
+      <p style="color:var(--text-secondary);max-width:500px;margin:0 auto 2rem" data-i="contact_desc">Posa't en contacte directe. Respondré el més aviat possible, normalment en menys de 24 hores.</p>
+      <div class="contact-form">
+        <div class="form-group"><input type="text" id="cf-nom" data-i-placeholder="cf_name" placeholder="El teu nom *"></div>
+        <div class="form-group"><input type="email" id="cf-email" data-i-placeholder="cf_email" placeholder="El teu correu electrònic *"></div>
+        <div class="form-group"><input type="text" id="cf-assumpte" data-i-placeholder="cf_subject" placeholder="Assumpte"></div>
+        <div class="form-group"><textarea id="cf-missatge" data-i-placeholder="cf_message" placeholder="Escriu el teu missatge aquí..."></textarea></div>
+        <button class="btn-send" onclick="submitForm()"><i class="fa-solid fa-paper-plane"></i> <span data-i="cf_send">ENVIAR MISSATGE</span></button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- FOOTER -->
+<footer>
+  <h2 data-i="footer_title">Parlem?</h2>
+  <p data-i="footer_sub">Estic disponible per a nous reptes i projectes.</p>
+  <div class="contact-links">
+    <a href="mailto:miquelgarciamt@gmail.com" class="contact-link"><i class="fa-solid fa-envelope" style="color:#ea4335"></i> miquelgarciamt@gmail.com</a>
+    <a href="https://instagram.com/miquelmt" target="_blank" class="contact-link"><i class="fa-brands fa-instagram" style="color:#e1306c"></i> @miquelmt</a>
+    <a href="https://wa.me/34613182485" target="_blank" class="contact-link"><i class="fa-brands fa-whatsapp" style="color:#25d366"></i> WhatsApp</a>
+  </div>
+  <p>📍 Sant Celoni · <span data-i="footer_avail">Disponibilitat: Totes les tardes</span></p>
+  <p class="footer-copy">&copy; 2025 Miquel García · Guia de Muntanya Professional</p>
+</footer>
+
+<!-- FLOAT WHATSAPP -->
+<a href="https://wa.me/34613182485" target="_blank" class="float-wa" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+
+<!-- ADMIN GEAR -->
+<div class="admin-gear" onclick="openAdminLogin()" title="Administrador"><i class="fa-solid fa-gear"></i></div>
+
+<!-- ADMIN BADGE -->
+<div id="admin-badge" onclick="document.getElementById('admin-panel').classList.add('show')"><i class="fa-solid fa-shield-halved"></i> ADMIN</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="closeLightbox()">
+  <span class="lb-close">&times;</span>
+  <img id="lb-img" src="" alt="">
+</div>
+
+<!-- ADMIN LOGIN -->
+<div id="admin-overlay">
+  <div class="admin-login-box">
+    <h2><i class="fa-solid fa-shield-halved"></i> Accés Admin</h2>
+    <p data-i="login_sub">Introdueix les teves credencials per accedir al panell de control</p>
+    <input type="text" id="admin-user" placeholder="Usuari" onkeypress="if(event.key==='Enter')document.getElementById('admin-pw').focus()">
+    <input type="password" id="admin-pw" placeholder="Contrasenya" onkeypress="if(event.key==='Enter')checkLogin()">
+    <div id="login-err" data-i="login_err">❌ Credencials incorrectes. Torna-ho a intentar.</div>
+    <button class="btn-login" onclick="checkLogin()"><i class="fa-solid fa-unlock"></i> <span data-i="login_btn">Entrar</span></button>
+    <button class="btn-cancel" onclick="closeAdminLogin()" data-i="login_cancel">Cancel·lar</button>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel">
+  <div class="admin-topbar">
+    <div class="admin-topbar-title">
+      <i class="fa-solid fa-shield-halved" style="color:var(--text-accent);font-size:1.3rem"></i>
+      <div>
+        <h1>Panell d'Administrador</h1>
+        <span>Miquel García · Guia de Muntanya</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-tb btn-tb-view" onclick="document.getElementById('admin-panel').classList.remove('show')"><i class="fa-solid fa-eye"></i> Veure web</button>
+      <button class="btn-tb btn-tb-logout" onclick="logoutAdmin()"><i class="fa-solid fa-right-from-bracket"></i> Sortir</button>
+    </div>
+  </div>
+  <div class="admin-body">
+    <div class="admin-sidebar">
+      <div class="sidebar-label">Panell</div>
+      <div class="sidebar-link active" onclick="showSection('dashboard',this)"><i class="fa-solid fa-chart-line"></i><span> Dashboard</span></div>
+      <div class="sidebar-label">Contingut</div>
+      <div class="sidebar-link" onclick="showSection('textos',this)"><i class="fa-solid fa-pen-to-square"></i><span> Textos</span></div>
+      <div class="sidebar-link" onclick="showSection('projectes',this)"><i class="fa-solid fa-mountain"></i><span> Projectes</span></div>
+      <div class="sidebar-link" onclick="showSection('testimonials-admin',this)"><i class="fa-solid fa-star"></i><span> Testimonials</span></div>
+      <div class="sidebar-link" onclick="showSection('faq-admin',this)"><i class="fa-solid fa-question"></i><span> FAQ</span></div>
+      <div class="sidebar-link" onclick="showSection('preus-admin',this)"><i class="fa-solid fa-euro-sign"></i><span> Preus</span></div>
+      <div class="sidebar-label">Comunicació</div>
+      <div class="sidebar-link" onclick="showSection('missatges',this)"><i class="fa-solid fa-inbox"></i><span> Missatges</span><span class="badge-count" id="msg-badge" style="display:none"></span></div>
+      <div class="sidebar-label">Configuració</div>
+      <div class="sidebar-link" onclick="showSection('perfil',this)"><i class="fa-solid fa-user-gear"></i><span> Perfil</span></div>
+      <div class="sidebar-link" onclick="showSection('seguretat',this)"><i class="fa-solid fa-lock"></i><span> Seguretat</span></div>
+    </div>
+
+    <div class="admin-content">
+
+      <!-- DASHBOARD -->
+      <div id="s-dashboard" class="admin-section active">
+        <div class="stats-grid">
+          <div class="stat-box"><div class="stat-icon">👁️</div><div class="stat-num" id="sv">0</div><div class="stat-lbl">Visites totals</div></div>
+          <div class="stat-box"><div class="stat-icon">📩</div><div class="stat-num" id="sm">0</div><div class="stat-lbl">Missatges rebuts</div></div>
+          <div class="stat-box"><div class="stat-icon">🏔️</div><div class="stat-num">3</div><div class="stat-lbl">Projectes actius</div></div>
+          <div class="stat-box"><div class="stat-icon">⏱️</div><div class="stat-num" id="st">0m</div><div class="stat-lbl">Temps en sessió</div></div>
+        </div>
+        <div class="a-card">
+          <h3><i class="fa-solid fa-bell"></i> Activitat Recent</h3>
+          <div id="recent-activity" style="color:var(--text-secondary);font-size:0.9rem">
+            <p style="padding:0.5rem 0;border-bottom:1px solid rgba(74,138,62,0.1)">🟢 Sessió d'administrador iniciada</p>
+            <p style="padding:0.5rem 0;border-bottom:1px solid rgba(74,138,62,0.1)">📊 Dashboard carregat correctament</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TEXTOS -->
+      <div id="s-textos" class="admin-section">
+        <div class="a-card">
+          <h3><i class="fa-solid fa-heading"></i> Capçalera Principal</h3>
+          <div class="a-form-group"><label>Nom (H1)</label><input type="text" id="edit-name" value="MIQUEL GARCÍA"></div>
+          <div class="a-form-group"><label>Subtítol</label><input type="text" id="edit-subtitle" value="GUIA DE MUNTANYA I LLEURE · SANT CELONI"></div>
+          <div class="a-form-group"><label>Frase Professional</label><textarea id="edit-quote">«Sóc un professional compromès, amb vocació de servei i capacitat per generar confiança i aportar valor en cada sortida.»</textarea></div>
+          <button class="btn-save" onclick="saveHeader()"><i class="fa-solid fa-floppy-disk"></i> Guardar Capçalera</button>
+        </div>
+        <div class="a-card">
+          <h3><i class="fa-solid fa-circle-info"></i> Secció "Sobre Mi"</h3>
+          <div class="a-form-group"><label>Paràgraf 1</label><textarea id="edit-about1">Soc un noi treballador, professional i dedicat, amb una gran habilitat natural per relacionar-me amb les persones...</textarea></div>
+          <div class="a-form-group"><label>Cita Personal</label><input type="text" id="edit-about-quote" value="Crear la meva pròpia empresa de guiatge i lleure per liderar el sector amb els meus propis valors."></div>
+          <button class="btn-save" onclick="saveAbout()"><i class="fa-solid fa-floppy-disk"></i> Guardar "Sobre Mi"</button>
+        </div>
+        <div class="a-card">
+          <h3><i class="fa-solid fa-shoe-prints"></i> Contacte / Footer</h3>
+          <div class="a-form-group"><label>Correu electrònic</label><input type="email" id="edit-email" value="miquelgarciamt@gmail.com"></div>
+          <div class="a-form-group"><label>Instagram</label><input type="text" id="edit-instagram" value="@miquelmt"></div>
+          <div class="a-form-group"><label>WhatsApp (amb prefix)</label><input type="text" id="edit-wa" value="34613182485"></div>
+          <button class="btn-save" onclick="toast('✅ Contacte actualitzat!')"><i class="fa-solid fa-floppy-disk"></i> Guardar Contacte</button>
+        </div>
+      </div>
+
+      <!-- PROJECTES -->
+      <div id="s-projectes" class="admin-section">
+        <div class="a-card">
+          <h3><i class="fa-solid fa-plus"></i> Afegir Nou Projecte</h3>
+          <div class="a-form-group"><label>Títol</label><input type="text" id="new-proj-title" placeholder="Nom del projecte..."></div>
+          <div class="a-form-group"><label>Descripció</label><textarea id="new-proj-desc" placeholder="Descriu el projecte..."></textarea></div>
+          <div class="a-form-group"><label>La teva funció</label><input type="text" id="new-proj-role" placeholder="El teu rol..."></div>
+          <button class="btn-save" onclick="addProject()"><i class="fa-solid fa-plus"></i> Afegir Projecte</button>
+        </div>
+        <div class="a-card">
+          <h3><i class="fa-solid fa-list"></i> Projectes Actuals</h3>
+          <div id="projects-admin-list"></div>
+        </div>
+      </div>
+
+      <!-- TESTIMONIALS ADMIN -->
+      <div id="s-testimonials-admin" class="admin-section">
+        <div class="a-card">
+          <h3><i class="fa-solid fa-plus"></i> Afegir Testimoni</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+            <div class="a-form-group"><label>Nom</label><input type="text" id="new-test-name" placeholder="Nom del client..."></div>
+            <div class="a-form-group"><label>Perfil</label><input type="text" id="new-test-role" placeholder="Excursionista, família..."></div>
+          </div>
+          <div class="a-form-group"><label>Valoració</label><select id="new-test-stars"><option value="5">★★★★★ (5)</option><option value="4">★★★★ (4)</option><option value="3">★★★ (3)</option></select></div>
+          <div class="a-form-group"><label>Comentari</label><textarea id="new-test-text" placeholder="Comentari del client..."></textarea></div>
+          <button class="btn-save" onclick="addTestimonial()"><i class="fa-solid fa-plus"></i> Afegir Testimoni</button>
+        </div>
+        <div class="a-card">
+          <h3><i class="fa-solid fa-list"></i> Testimonials Actuals</h3>
+          <div id="testimonials-admin-list"></div>
+        </div>
+      </div>
+
+      <!-- FAQ ADMIN -->
+      <div id="s-faq-admin" class="admin-section">
+        <div class="a-card">
+          <h3><i class="fa-solid fa-plus"></i> Afegir Pregunta</h3>
+          <div class="a-form-group"><label>Pregunta</label><input type="text" id="new-faq-q" placeholder="Escriu la pregunta..."></div>
+          <div class="a-form-group"><label>Resposta</label><textarea id="new-faq-a" placeholder="Escriu la resposta..."></textarea></div>
+          <button class="btn-save" onclick="addFaq()"><i class="fa-solid fa-plus"></i> Afegir Pregunta</button>
+        </div>
+        <div class="a-card">
+          <h3><i class="fa-solid fa-list"></i> Preguntes Actuals</h3>
+          <div id="faq-admin-list"></div>
+        </div>
+      </div>
+
+      <!-- PREUS ADMIN -->
+      <div id="s-preus-admin" class="admin-section">
+        <div class="a-card">
+          <h3><i class="fa-solid fa-euro-sign"></i> Gestionar Tarifes</h3>
+          <div id="prices-admin-list"></div>
+        </div>
+      </div>
+
+      <!-- MISSATGES -->
+      <div id="s-missatges" class="admin-section">
+        <div class="a-card">
+          <h3><i class="fa-solid fa-inbox"></i> Bústia de Missatges</h3>
+          <div id="messages-list"><p style="color:var(--text-secondary)">Encara no hi ha missatges rebuts.</p></div>
+        </div>
+      </div>
+
+      <!-- PERFIL -->
+      <div id="s-perfil" class="admin-section">
+        <div class="a-card">
+          <h3><i class="fa-solid fa-user-gear"></i> Perfil Públic</h3>
+          <div class="a-form-group"><label>Nom complet</label><input type="text" value="Miquel García Martínez"></div>
+          <div class="a-form-group"><label>Professió</label><input type="text" value="Guia de Muntanya i Lleure"></div>
+          <div class="a-form-group"><label>Localitat</label><input type="text" value="Sant Celoni, Barcelona"></div>
+          <div class="a-form-group"><label>Disponibilitat</label><input type="text" value="Totes les tardes · Caps de setmana"></div>
+          <div class="a-form-group"><label>Bio breu</label><textarea>Professional de guiatge de muntanya, format al Ginebró. Especialitzat en senderisme, BTT i activitats per a grups de tots els nivells.</textarea></div>
+          <button class="btn-save" onclick="toast('✅ Perfil actualitzat!')"><i class="fa-solid fa-floppy-disk"></i> Guardar Perfil</button>
+        </div>
+      </div>
+
+      <!-- SEGURETAT -->
+      <div id="s-seguretat" class="admin-section">
+        <div class="a-card">
+          <h3><i class="fa-solid fa-lock"></i> Canviar Contrasenya</h3>
+          <div class="a-form-group"><label>Contrasenya Actual</label><input type="password" placeholder="••••••••"></div>
+          <div class="a-form-group"><label>Nova Contrasenya</label><input type="password" placeholder="••••••••"></div>
+          <div class="a-form-group"><label>Confirmar Nova Contrasenya</label><input type="password" placeholder="••••••••"></div>
+          <button class="btn-save" onclick="toast('✅ Contrasenya actualitzada!')"><i class="fa-solid fa-shield-halved"></i> Actualitzar Contrasenya</button>
+        </div>
+        <div class="a-card">
+          <h3><i class="fa-solid fa-trash"></i> Zona de Perill</h3>
+          <p style="color:var(--text-secondary);margin-bottom:1rem;font-size:0.9rem">Aquestes accions no es poden desfer fàcilment. Utilitza-les amb precaució.</p>
+          <button class="btn-danger" onclick="toast('⚠️ Funció desactivada en mode demo')">Esborrar tots els missatges</button>
+        </div>
+      </div>
+
+    </div><!-- /admin-content -->
+  </div><!-- /admin-body -->
+</div><!-- /admin-panel -->
+
+<div id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ══════════════════════════════════════════════
+// TRANSLATIONS
+// ══════════════════════════════════════════════
+const T = {
+  ca: {
+    badge:"Guia de Muntanya Professional",subtitle:"GUIA DE MUNTANYA I LLEURE · SANT CELONI",
+    quote:"«Sóc un professional compromès, amb vocació de servei i capacitat per generar confiança i aportar valor en cada sortida.»",
+    nav_home:"INICI",nav_about:"SOBRE MI",nav_portfolio:"PORTFOLI",nav_map:"MAPA",
+    nav_test:"TESTIMONIALS",nav_faq:"FAQ",nav_prices:"PREUS",nav_cv:"CV & VÍDEO",
+    nav_design:"DISSENY",nav_contact:"CONTACTE",
+    home_welcome_label:"Benvingut al meu espai professional",home_title:"Hola, soc en Miquel.",
+    home_p1:"Benvinguts a la meva finestra digital al món del guiatge de muntanya. En aquest espai vull mostrar-vos la meva passió pel medi natural i el meu rigor professional en la conducció de grups.",
+    home_p2:"La meva formació al Ginebró m'ha permès combinar la tècnica rigorosa de seguretat amb les habilitats socials necessàries per fer de cada sortida una experiència autèntica i inoblidable.",
+    chip1:"+50 sortides",chip2:"+300 participants",chip3:"5★ mitjana",
+    about_sub:"Qui soc i què m'impulsa",about_title:"Sobre Mi",
+    about_p1:"Soc un noi treballador, professional i dedicat, amb una gran habilitat natural per relacionar-me amb les persones, generant un clima de confiança i comoditat des del primer moment.",
+    about_p2:"M'agrada cuidar els detalls i assegurar-me que tothom gaudeixi de l'activitat amb la màxima seguretat i satisfacció. La muntanya no és només el meu lloc de treball, és la meva passió.",
+    about_quote:'"Crear la meva pròpia empresa de guiatge i lleure per liderar el sector amb els meus propis valors."',
+    about_lang:"Anglès C1 · Castellà nadiu",about_edu:"Formació al Ginebró",
+    sk1:"Guiatge de Grups",sk2:"Seguretat en Muntanya",sk3:"Habilitats Socials",sk4:"Planificació de Rutes",sk5:"Primers Auxilis",
+    port_sub:"Experiències i projectes destacats",port_title:"Portfoli",
+    proj1_title:"Pràctiques al Ginebró",proj1_desc:"Col·laboració activa en la gestió i conducció de grups escolars i d'adults en entorns de muntanya mitjana al Montseny i el Pirineu.",proj1_role:"Co-guia i suport logístic",
+    proj2_title:"Disseny de Rutes al Montseny",proj2_desc:"Creació d'itineraris personalitzats basats en la història local, la biodiversitat del Parc Natural i les necessitats específiques de cada grup.",proj2_role:"Dissenyador d'itineraris",
+    proj3_title:"Sortida Tècnica BTT",proj3_desc:"Gestió d'un grup de ciclistes per terreny irregular amb fort component de seguretat mecànica i física.",proj3_role:"Guia líder del grup BTT",
+    role_label:"Funció:",
+    map_sub:"On opero habitualment",map_title:"Mapa de Zones",map_desc:"Descobreix els llocs on he realitzat les meves activitats. Fes clic als marcadors per veure els detalls.",
+    test_sub:"El que diuen els meus clients",test_title:"Testimonials",
+    faq_sub:"Tot el que necessites saber",faq_title:"Preguntes Freqüents",
+    price_sub:"Transparent i adaptat a cada necessitat",price_title:"Tarifes i Serveis",price_desc:"Tots els preus inclouen guiatge professional, material de seguretat bàsic i planificació personalitzada de la ruta. IVA inclòs.",
+    cv_sub:"Documents i presentació personal",cv_title:"CV i Vídeo",cv_doc:"Documentació",cv_doc_desc:"Accedeix a la meva formació al Ginebró, el meu domini d'idiomes (Anglès C1) i la meva experiència en voluntariats.",cv_dl:"DESCARREGAR CV",cv_video:"Vídeo Presentació",cv_no_video:"El teu navegador no suporta el vídeo.",
+    design_sub:"Les decisions estètiques del projecte",design_title:"Filosofia de Disseny",
+    design_color_title:"Psicologia del Color",color1:"Verd Bosc — Natura i creixement",color2:"Blau Cel — Confiança i professionalitat",color3:"Verd Clar — Energia i vitalitat",color4:"Crema — Calidesa i accessibilitat",
+    design_glass_title:"Glassmorphism",design_glass_desc:"El disseny Glassmorphism crea una sensació de profunditat i modernitat. Els elements translúcids amb backdrop-filter blur imiten el vidre mat, combinant elegància i llegibilitat en un entorn fosc inspirat en la natura.",
+    design_typo_title:"Tipografia",typo1_desc:"Títols — Elegant i amb caràcter",typo2_desc:"Cos de text — Llegibilitat màxima",typo3_desc:"Dades i etiquetes — Precisió tècnica",
+    design_arch_title:"Arquitectura Web",design_arch_desc:"Interfície SPA amb navegació per pestanyes, sense recàrregues. Animacions CSS subtils, mapa Leaflet, formulari de contacte i panell d'administrador integrat.",
+    contact_sub:"Parlem del teu proper repte",contact_title:"Contacte",contact_desc:"Posa't en contacte directe. Respondré el més aviat possible, normalment en menys de 24 hores.",
+    cf_name:"El teu nom *",cf_email:"El teu correu electrònic *",cf_subject:"Assumpte",cf_message:"Escriu el teu missatge aquí...",cf_send:"ENVIAR MISSATGE",
+    footer_title:"Parlem?",footer_sub:"Estic disponible per a nous reptes i projectes.",footer_avail:"Disponibilitat: Totes les tardes",
+    login_sub:"Introdueix les teves credencials per accedir al panell de control",login_err:"❌ Credencials incorrectes. Torna-ho a intentar.",login_btn:"Entrar",login_cancel:"Cancel·lar"
+  },
+  es: {
+    badge:"Guía de Montaña Profesional",subtitle:"GUÍA DE MONTAÑA Y OCIO · SANT CELONI",
+    quote:"«Soy un profesional comprometido, con vocación de servicio y capacidad para generar confianza y aportar valor en cada salida.»",
+    nav_home:"INICIO",nav_about:"SOBRE MÍ",nav_portfolio:"PORTFOLIO",nav_map:"MAPA",
+    nav_test:"TESTIMONIOS",nav_faq:"FAQ",nav_prices:"PRECIOS",nav_cv:"CV & VÍDEO",
+    nav_design:"DISEÑO",nav_contact:"CONTACTO",
+    home_welcome_label:"Bienvenido a mi espacio profesional",home_title:"Hola, soy Miquel.",
+    home_p1:"Bienvenidos a mi ventana digital al mundo de la guía de montaña. En este espacio quiero mostraros mi pasión por el medio natural y mi rigor profesional en la conducción de grupos.",
+    home_p2:"Mi formación en el Ginebró me ha permitido combinar la técnica rigurosa de seguridad con las habilidades sociales necesarias para hacer de cada salida una experiencia auténtica e inolvidable.",
+    chip1:"+50 salidas",chip2:"+300 participantes",chip3:"5★ promedio",
+    about_sub:"Quién soy y qué me impulsa",about_title:"Sobre Mí",
+    about_p1:"Soy un chico trabajador, profesional y dedicado, con gran habilidad natural para relacionarme con las personas, generando un clima de confianza y comodidad desde el primer momento.",
+    about_p2:"Me gusta cuidar los detalles y asegurarme de que todos disfruten de la actividad con la máxima seguridad y satisfacción. La montaña no es solo mi lugar de trabajo, es mi pasión.",
+    about_quote:'"Crear mi propia empresa de guía y ocio para liderar el sector con mis propios valores."',
+    about_lang:"Inglés C1 · Catalán nativo",about_edu:"Formación en el Ginebró",
+    sk1:"Guía de Grupos",sk2:"Seguridad en Montaña",sk3:"Habilidades Sociales",sk4:"Planificación de Rutas",sk5:"Primeros Auxilios",
+    port_sub:"Experiencias y proyectos destacados",port_title:"Portfolio",
+    proj1_title:"Prácticas en el Ginebró",proj1_desc:"Colaboración activa en la gestión y conducción de grupos escolares y adultos en entornos de montaña media.",proj1_role:"Co-guía y apoyo logístico",
+    proj2_title:"Diseño de Rutas en el Montseny",proj2_desc:"Creación de itinerarios personalizados basados en la historia local, la biodiversidad del Parque Natural y las necesidades específicas de cada grupo.",proj2_role:"Diseñador de itinerarios",
+    proj3_title:"Salida Técnica BTT",proj3_desc:"Gestión de un grupo de ciclistas por terreno irregular con fuerte componente de seguridad mecánica y física.",proj3_role:"Guía líder del grupo BTT",
+    role_label:"Función:",
+    map_sub:"Donde opero habitualmente",map_title:"Mapa de Zonas",map_desc:"Descubre los lugares donde he realizado mis actividades. Haz clic en los marcadores para ver los detalles.",
+    test_sub:"Lo que dicen mis clientes",test_title:"Testimonios",
+    faq_sub:"Todo lo que necesitas saber",faq_title:"Preguntas Frecuentes",
+    price_sub:"Transparente y adaptado a cada necesidad",price_title:"Tarifas y Servicios",price_desc:"Todos los precios incluyen guiaje profesional, material de seguridad básico y planificación personalizada. IVA incluido.",
+    cv_sub:"Documentos y presentación personal",cv_title:"CV y Vídeo",cv_doc:"Documentación",cv_doc_desc:"Accede a mi formación en el Ginebró, mi dominio de idiomas (Inglés C1) y mi experiencia en voluntariados.",cv_dl:"DESCARGAR CV",cv_video:"Vídeo Presentación",cv_no_video:"Tu navegador no soporta el vídeo.",
+    design_sub:"Las decisiones estéticas del proyecto",design_title:"Filosofía de Diseño",
+    design_color_title:"Psicología del Color",color1:"Verde Bosque — Naturaleza y crecimiento",color2:"Azul Cielo — Confianza y profesionalidad",color3:"Verde Claro — Energía y vitalidad",color4:"Crema — Calidez y accesibilidad",
+    design_glass_title:"Glassmorphism",design_glass_desc:"El diseño Glassmorphism crea una sensación de profundidad y modernidad. Los elementos translúcidos imitan el vidrio esmerilado, combinando elegancia y legibilidad en un entorno oscuro inspirado en la naturaleza.",
+    design_typo_title:"Tipografía",typo1_desc:"Títulos — Elegante y con carácter",typo2_desc:"Cuerpo de texto — Máxima legibilidad",typo3_desc:"Datos y etiquetas — Precisión técnica",
+    design_arch_title:"Arquitectura Web",design_arch_desc:"Interfaz SPA con navegación por pestañas, sin recargas. Animaciones CSS sutiles, mapa Leaflet, formulario de contacto y panel de administrador integrado.",
+    contact_sub:"Hablemos de tu próximo reto",contact_title:"Contacto",contact_desc:"Ponte en contacto directo. Responderé lo antes posible, normalmente en menos de 24 horas.",
+    cf_name:"Tu nombre *",cf_email:"Tu correo electrónico *",cf_subject:"Asunto",cf_message:"Escribe tu mensaje aquí...",cf_send:"ENVIAR MENSAJE",
+    footer_title:"¿Hablamos?",footer_sub:"Estoy disponible para nuevos retos y proyectos.",footer_avail:"Disponibilidad: Todas las tardes",
+    login_sub:"Introduce tus credenciales para acceder al panel de control",login_err:"❌ Credenciales incorrectas. Inténtalo de nuevo.",login_btn:"Entrar",login_cancel:"Cancelar"
+  },
+  en: {
+    badge:"Professional Mountain Guide",subtitle:"MOUNTAIN & LEISURE GUIDE · SANT CELONI",
+    quote:"«I am a committed professional, with a service vocation and the ability to build trust and add value on every outing.»",
+    nav_home:"HOME",nav_about:"ABOUT ME",nav_portfolio:"PORTFOLIO",nav_map:"MAP",
+    nav_test:"TESTIMONIALS",nav_faq:"FAQ",nav_prices:"PRICES",nav_cv:"CV & VIDEO",
+    nav_design:"DESIGN",nav_contact:"CONTACT",
+    home_welcome_label:"Welcome to my professional space",home_title:"Hi, I'm Miquel.",
+    home_p1:"Welcome to my digital window into the world of mountain guiding. In this space I want to show you my passion for the natural environment and my professional rigour in leading groups.",
+    home_p2:"My training at el Ginebró has allowed me to combine rigorous safety techniques with the social skills needed to make every outing an authentic and unforgettable experience.",
+    chip1:"+50 outings",chip2:"+300 participants",chip3:"5★ average",
+    about_sub:"Who I am and what drives me",about_title:"About Me",
+    about_p1:"I am a hardworking, professional and dedicated person with a natural ability to connect with people, creating a climate of trust and comfort from the very first moment.",
+    about_p2:"I enjoy taking care of the details and making sure everyone enjoys the activity with the highest safety and satisfaction. The mountain is not just my workplace, it is my passion.",
+    about_quote:'"To create my own guiding and leisure company to lead the sector with my own values."',
+    about_lang:"English C1 · Catalan native",about_edu:"Training at el Ginebró",
+    sk1:"Group Guiding",sk2:"Mountain Safety",sk3:"Social Skills",sk4:"Route Planning",sk5:"First Aid",
+    port_sub:"Highlights and featured projects",port_title:"Portfolio",
+    proj1_title:"Internship at el Ginebró",proj1_desc:"Active collaboration in managing and leading school and adult groups in mid-mountain environments in Montseny and the Pyrenees.",proj1_role:"Co-guide and logistical support",
+    proj2_title:"Route Design in Montseny",proj2_desc:"Creation of personalised itineraries based on local history, the biodiversity of the Natural Park and the specific needs of each group.",proj2_role:"Itinerary designer",
+    proj3_title:"Technical MTB Outing",proj3_desc:"Management of a cyclists group over rough terrain with a strong mechanical and physical safety component.",proj3_role:"Lead MTB group guide",
+    role_label:"Role:",
+    map_sub:"Where I usually operate",map_title:"Zone Map",map_desc:"Discover the places where I carry out my guiding activities. Click the markers to see details.",
+    test_sub:"What my clients say",test_title:"Testimonials",
+    faq_sub:"Everything you need to know",faq_title:"Frequently Asked Questions",
+    price_sub:"Transparent and tailored to every need",price_title:"Rates & Services",price_desc:"All prices include professional guiding, basic safety equipment and personalised route planning. VAT included.",
+    cv_sub:"Documents and personal presentation",cv_title:"CV & Video",cv_doc:"Documentation",cv_doc_desc:"Access my training at el Ginebró, language skills (English C1) and volunteering experience.",cv_dl:"DOWNLOAD CV",cv_video:"Presentation Video",cv_no_video:"Your browser does not support the video.",
+    design_sub:"The aesthetic decisions of the project",design_title:"Design Philosophy",
+    design_color_title:"Colour Psychology",color1:"Forest Green — Nature and growth",color2:"Sky Blue — Trust and professionalism",color3:"Light Green — Energy and vitality",color4:"Cream — Warmth and accessibility",
+    design_glass_title:"Glassmorphism",design_glass_desc:"Glassmorphism design creates a sense of depth and modernity. Translucent elements with backdrop-filter blur mimic frosted glass, combining elegance and readability in a dark nature-inspired environment.",
+    design_typo_title:"Typography",typo1_desc:"Headings — Elegant and characterful",typo2_desc:"Body text — Maximum readability",typo3_desc:"Data and labels — Technical precision",
+    design_arch_title:"Web Architecture",design_arch_desc:"SPA interface with tab navigation, no page reloads. Subtle CSS animations, Leaflet map, contact form and integrated admin panel.",
+    contact_sub:"Let's talk about your next challenge",contact_title:"Contact",contact_desc:"Get in touch directly. I will respond as soon as possible, usually within 24 hours.",
+    cf_name:"Your name *",cf_email:"Your email address *",cf_subject:"Subject",cf_message:"Write your message here...",cf_send:"SEND MESSAGE",
+    footer_title:"Shall we talk?",footer_sub:"I am available for new challenges and projects.",footer_avail:"Availability: Every afternoon",
+    login_sub:"Enter your credentials to access the control panel",login_err:"❌ Incorrect credentials. Please try again.",login_btn:"Login",login_cancel:"Cancel"
+  },
+  fr: {
+    badge:"Guide de Montagne Professionnel",subtitle:"GUIDE DE MONTAGNE ET LOISIRS · SANT CELONI",
+    quote:"«Je suis un professionnel engagé, avec une vocation de service et la capacité de créer de la confiance et d'apporter de la valeur à chaque sortie.»",
+    nav_home:"ACCUEIL",nav_about:"À PROPOS",nav_portfolio:"PORTFOLIO",nav_map:"CARTE",
+    nav_test:"TÉMOIGNAGES",nav_faq:"FAQ",nav_prices:"TARIFS",nav_cv:"CV & VIDÉO",
+    nav_design:"DESIGN",nav_contact:"CONTACT",
+    home_welcome_label:"Bienvenue dans mon espace professionnel",home_title:"Bonjour, je suis Miquel.",
+    home_p1:"Bienvenue dans ma fenêtre numérique sur le monde du guidage en montagne. Dans cet espace, je veux vous montrer ma passion pour le milieu naturel et mon professionnalisme dans la conduite de groupes.",
+    home_p2:"Ma formation au Ginebró m'a permis de combiner les techniques rigoureuses de sécurité avec les compétences sociales nécessaires pour faire de chaque sortie une expérience authentique et inoubliable.",
+    chip1:"+50 sorties",chip2:"+300 participants",chip3:"5★ moyenne",
+    about_sub:"Qui je suis et ce qui me motive",about_title:"À Propos de Moi",
+    about_p1:"Je suis un jeune professionnel travailleur et dévoué, avec une grande aptitude naturelle à me connecter avec les gens, créant un climat de confiance et de confort dès le premier instant.",
+    about_p2:"J'aime soigner les détails et m'assurer que tout le monde profite de l'activité en toute sécurité et satisfaction. La montagne n'est pas seulement mon lieu de travail, c'est ma passion.",
+    about_quote:'"Créer ma propre entreprise de guidage et de loisirs pour diriger le secteur avec mes propres valeurs."',
+    about_lang:"Anglais C1 · Catalan natif",about_edu:"Formation au Ginebró",
+    sk1:"Guidage de Groupes",sk2:"Sécurité en Montagne",sk3:"Compétences Sociales",sk4:"Planification d'Itinéraires",sk5:"Premiers Secours",
+    port_sub:"Expériences et projets mis en avant",port_title:"Portfolio",
+    proj1_title:"Stage au Ginebró",proj1_desc:"Collaboration active dans la gestion et conduite de groupes scolaires et adultes en milieu de montagne moyenne.",proj1_role:"Co-guide et soutien logistique",
+    proj2_title:"Conception d'Itinéraires au Montseny",proj2_desc:"Création d'itinéraires personnalisés basés sur l'histoire locale, la biodiversité du Parc Naturel et les besoins spécifiques de chaque groupe.",proj2_role:"Concepteur d'itinéraires",
+    proj3_title:"Sortie Technique VTT",proj3_desc:"Gestion d'un groupe de cyclistes sur terrain accidenté avec un fort composant de sécurité mécanique et physique.",proj3_role:"Guide leader du groupe VTT",
+    role_label:"Rôle:",
+    map_sub:"Où j'opère habituellement",map_title:"Carte des Zones",map_desc:"Découvrez les endroits où j'ai mené mes activités de guidage. Cliquez sur les marqueurs pour voir les détails.",
+    test_sub:"Ce que disent mes clients",test_title:"Témoignages",
+    faq_sub:"Tout ce que vous devez savoir",faq_title:"Foire Aux Questions",
+    price_sub:"Transparent et adapté à chaque besoin",price_title:"Tarifs et Services",price_desc:"Tous les prix incluent le guidage professionnel, le matériel de sécurité de base et la planification personnalisée de l'itinéraire. TVA incluse.",
+    cv_sub:"Documents et présentation personnelle",cv_title:"CV et Vidéo",cv_doc:"Documentation",cv_doc_desc:"Accédez à ma formation au Ginebró, ma maîtrise des langues (Anglais C1) et mon expérience en bénévolat.",cv_dl:"TÉLÉCHARGER CV",cv_video:"Vidéo de Présentation",cv_no_video:"Votre navigateur ne supporte pas la vidéo.",
+    design_sub:"Les décisions esthétiques du projet",design_title:"Philosophie de Design",
+    design_color_title:"Psychologie des Couleurs",color1:"Vert Forêt — Nature et croissance",color2:"Bleu Ciel — Confiance et professionnalisme",color3:"Vert Clair — Énergie et vitalité",color4:"Crème — Chaleur et accessibilité",
+    design_glass_title:"Glassmorphisme",design_glass_desc:"Le design Glassmorphisme crée une sensation de profondeur et de modernité. Les éléments translucides imitent le verre dépoli, combinant élégance et lisibilité dans un environnement sombre inspiré de la nature.",
+    design_typo_title:"Typographie",typo1_desc:"Titres — Élégant et avec caractère",typo2_desc:"Corps du texte — Lisibilité maximale",typo3_desc:"Données et étiquettes — Précision technique",
+    design_arch_title:"Architecture Web",design_arch_desc:"Interface SPA avec navigation par onglets, sans rechargements. Animations CSS subtiles, carte Leaflet, formulaire de contact et panneau d'administration intégré.",
+    contact_sub:"Parlons de votre prochain défi",contact_title:"Contact",contact_desc:"Mettez-vous en contact direct. Je répondrai dès que possible, généralement en moins de 24 heures.",
+    cf_name:"Votre nom *",cf_email:"Votre adresse e-mail *",cf_subject:"Sujet",cf_message:"Écrivez votre message ici...",cf_send:"ENVOYER LE MESSAGE",
+    footer_title:"On parle?",footer_sub:"Je suis disponible pour de nouveaux défis et projets.",footer_avail:"Disponibilité: Tous les après-midis",
+    login_sub:"Entrez vos identifiants pour accéder au panneau de contrôle",login_err:"❌ Identifiants incorrects. Veuillez réessayer.",login_btn:"Connexion",login_cancel:"Annuler"
+  },
+  it: {
+    badge:"Guida di Montagna Professionista",subtitle:"GUIDA MONTANA E TEMPO LIBERO · SANT CELONI",
+    quote:"«Sono un professionista impegnato, con vocazione al servizio e la capacità di creare fiducia e apportare valore ad ogni uscita.»",
+    nav_home:"INIZIO",nav_about:"CHI SONO",nav_portfolio:"PORTFOLIO",nav_map:"MAPPA",
+    nav_test:"TESTIMONIANZE",nav_faq:"FAQ",nav_prices:"PREZZI",nav_cv:"CV & VIDEO",
+    nav_design:"DESIGN",nav_contact:"CONTATTI",
+    home_welcome_label:"Benvenuto nel mio spazio professionale",home_title:"Ciao, sono Miquel.",
+    home_p1:"Benvenuti alla mia finestra digitale sul mondo della guida di montagna. In questo spazio voglio mostrarvi la mia passione per l'ambiente naturale e il mio rigore professionale nella conduzione di gruppi.",
+    home_p2:"La mia formazione al Ginebró mi ha permesso di combinare tecniche di sicurezza rigorose con le competenze sociali necessarie per rendere ogni uscita un'esperienza autentica e indimenticabile.",
+    chip1:"+50 uscite",chip2:"+300 partecipanti",chip3:"5★ media",
+    about_sub:"Chi sono e cosa mi spinge",about_title:"Chi Sono",
+    about_p1:"Sono un ragazzo lavoratore, professionale e dedicato, con una grande abilità naturale nel relazionarmi con le persone, creando un clima di fiducia e comodità fin dal primo momento.",
+    about_p2:"Mi piace curare i dettagli e assicurarmi che tutti godano dell'attività con la massima sicurezza e soddisfazione. La montagna non è solo il mio posto di lavoro, è la mia passione.",
+    about_quote:'"Creare la mia azienda di guida e tempo libero per guidare il settore con i miei valori."',
+    about_lang:"Inglese C1 · Catalano madrelingua",about_edu:"Formazione al Ginebró",
+    sk1:"Guida di Gruppi",sk2:"Sicurezza in Montagna",sk3:"Competenze Sociali",sk4:"Pianificazione Percorsi",sk5:"Primo Soccorso",
+    port_sub:"Esperienze e progetti in evidenza",port_title:"Portfolio",
+    proj1_title:"Tirocinio al Ginebró",proj1_desc:"Collaborazione attiva nella gestione e conduzione di gruppi scolastici e adulti in ambienti di montagna media.",proj1_role:"Co-guida e supporto logistico",
+    proj2_title:"Progettazione Percorsi al Montseny",proj2_desc:"Creazione di itinerari personalizzati basati sulla storia locale, la biodiversità del Parco Naturale e le esigenze specifiche di ciascun gruppo.",proj2_role:"Progettista di itinerari",
+    proj3_title:"Uscita Tecnica MTB",proj3_desc:"Gestione di un gruppo di ciclisti su terreno accidentato con forte componente di sicurezza meccanica e fisica.",proj3_role:"Guida leader del gruppo MTB",
+    role_label:"Ruolo:",
+    map_sub:"Dove opero abitualmente",map_title:"Mappa delle Zone",map_desc:"Scopri i luoghi dove ho svolto le mie attività di guida. Clicca sui marcatori per vedere i dettagli.",
+    test_sub:"Cosa dicono i miei clienti",test_title:"Testimonianze",
+    faq_sub:"Tutto quello che devi sapere",faq_title:"Domande Frequenti",
+    price_sub:"Trasparente e adattato ad ogni esigenza",price_title:"Tariffe e Servizi",price_desc:"Tutti i prezzi includono guida professionale, materiale di sicurezza di base e pianificazione personalizzata del percorso. IVA inclusa.",
+    cv_sub:"Documenti e presentazione personale",cv_title:"CV e Video",cv_doc:"Documentazione",cv_doc_desc:"Accedi alla mia formazione al Ginebró, alla mia padronanza delle lingue (Inglese C1) e alla mia esperienza nel volontariato.",cv_dl:"SCARICA CV",cv_video:"Video di Presentazione",cv_no_video:"Il tuo browser non supporta il video.",
+    design_sub:"Le decisioni estetiche del progetto",design_title:"Filosofia di Design",
+    design_color_title:"Psicologia del Colore",color1:"Verde Foresta — Natura e crescita",color2:"Blu Cielo — Fiducia e professionalità",color3:"Verde Chiaro — Energia e vitalità",color4:"Crema — Calore e accessibilità",
+    design_glass_title:"Glassmorfismo",design_glass_desc:"Il design Glassmorfismo crea una sensazione di profondità e modernità. Gli elementi traslucidi imitano il vetro smerigliato, combinando eleganza e leggibilità in un ambiente scuro ispirato alla natura.",
+    design_typo_title:"Tipografia",typo1_desc:"Titoli — Elegante e con carattere",typo2_desc:"Corpo del testo — Massima leggibilità",typo3_desc:"Dati ed etichette — Precisione tecnica",
+    design_arch_title:"Architettura Web",design_arch_desc:"Interfaccia SPA con navigazione a schede, senza ricaricamenti. Animazioni CSS sottili, mappa Leaflet, modulo di contatto e pannello di amministrazione integrato.",
+    contact_sub:"Parliamo della tua prossima sfida",contact_title:"Contatti",contact_desc:"Mettiti in contatto diretto. Risponderò il prima possibile, di solito entro 24 ore.",
+    cf_name:"Il tuo nome *",cf_email:"La tua email *",cf_subject:"Oggetto",cf_message:"Scrivi il tuo messaggio qui...",cf_send:"INVIA MESSAGGIO",
+    footer_title:"Parliamo?",footer_sub:"Sono disponibile per nuove sfide e progetti.",footer_avail:"Disponibilità: Tutti i pomeriggi",
+    login_sub:"Inserisci le tue credenziali per accedere al pannello di controllo",login_err:"❌ Credenziali errate. Riprova.",login_btn:"Accedi",login_cancel:"Annulla"
+  }
+};
+
+let lang = 'ca';
+function setLang(l) {
+  lang = l;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active-lang'));
+  document.getElementById('btn-'+l).classList.add('active-lang');
+  applyLang();
+}
+function applyLang() {
+  const t = T[lang];
+  // data-i elements
+  document.querySelectorAll('[data-i]').forEach(el => {
+    const key = el.getAttribute('data-i');
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+  // placeholders
+  document.querySelectorAll('[data-i-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i-placeholder');
+    if (t[key] !== undefined) el.placeholder = t[key];
+  });
+  // nav buttons
+  const navKeys = ['nav_home','nav_about','nav_portfolio','nav_map','nav_test','nav_faq','nav_prices','nav_cv','nav_design','nav_contact'];
+  document.querySelectorAll('.tab-button').forEach((btn,i) => {
+    if (navKeys[i] && t[navKeys[i]]) btn.textContent = t[navKeys[i]];
+  });
+  // re-render dynamic content in current language
+  renderFaq();
+  renderPrices();
+  renderTestimonials();
+}
+
+// ══════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════
+const testimonialsData = [
+  {initials:'JM', name:'Joan Martínez', role:{ca:'Excursionista',es:'Excursionista',en:'Hiker',fr:'Randonneur',it:'Escursionista'}, stars:5, text:{ca:'"Miquel és un guia excepcional. La seva seguretat, coneixement de la muntanya i capacitat de crear bon ambient fan que cada sortida sigui memorable. Altament recomanat!"',es:'"Miquel es un guía excepcional. Su seguridad, conocimiento de la montaña y capacidad para crear buen ambiente hacen que cada salida sea memorable. ¡Altamente recomendado!"',en:'"Miquel is an exceptional guide. His safety awareness, knowledge of the mountain and ability to create a great atmosphere make every outing memorable. Highly recommended!"',fr:'"Miquel est un guide exceptionnel. Sa sécurité, sa connaissance de la montagne et sa capacité à créer une bonne ambiance rendent chaque sortie mémorable. Vivement recommandé!"',it:'"Miquel è una guida eccezionale. La sua sicurezza, la conoscenza della montagna e la capacità di creare un buon clima rendono ogni uscita memorabile. Altamente consigliato!"'}},
+  {initials:'SR', name:'Sara Rodríguez', role:{ca:'Grup d\'amics',es:'Grupo de amigos',en:'Friends group',fr:'Groupe d\'amis',it:'Gruppo di amici'}, stars:5, text:{ca:'"La nostra sortida al Montseny va ser perfecta. En Miquel va adaptar la ruta al nostre nivell i ens va ensenyar coses fascinants sobre la flora local. Tornaríem sense dubtar!"',es:'"Nuestra salida al Montseny fue perfecta. Miquel adaptó la ruta a nuestro nivel y nos enseñó cosas fascinantes sobre la flora local. ¡Repetiríamos sin dudar!"',en:'"Our outing to Montseny was perfect. Miquel adapted the route to our level and taught us fascinating things about local flora. We would definitely go again!"',fr:'"Notre sortie au Montseny était parfaite. Miquel a adapté l\'itinéraire à notre niveau et nous a appris des choses fascinantes sur la flore locale. On revient sans hésiter!"',it:'"La nostra uscita al Montseny è stata perfetta. Miquel ha adattato il percorso al nostro livello e ci ha insegnato cose affascinanti sulla flora locale. Ritorneremmo senza dubitare!"'}},
+  {initials:'CM', name:'Carlos Moreno', role:{ca:'Ciclista de muntanya',es:'Ciclista de montaña',en:'Mountain cyclist',fr:'Cycliste de montagne',it:'Ciclista di montagna'}, stars:5, text:{ca:'"Com a ciclista, aprecio els seus coneixements tècnics i la seva actitud responsable. La sortida BTT va ser desafiadora però segura. Un professional de veritat."',es:'"Como ciclista, aprecio sus conocimientos técnicos y su actitud responsable. La salida BTT fue desafiante pero segura. Un profesional de verdad."',en:'"As a cyclist, I appreciate his technical knowledge and responsible attitude. The MTB outing was challenging but safe. A true professional."',fr:'"En tant que cycliste, j\'apprécie ses connaissances techniques et son attitude responsable. La sortie VTT était difficile mais sûre. Un vrai professionnel."',it:'"Come ciclista, apprezzo le sue conoscenze tecniche e il suo atteggiamento responsabile. L\'uscita MTB è stata impegnativa ma sicura. Un vero professionista."'}},
+  {initials:'LP', name:'Laura Pérez', role:{ca:'Família amb nens',es:'Familia con niños',en:'Family with children',fr:'Famille avec enfants',it:'Famiglia con bambini'}, stars:5, text:{ca:'"Els nostres fills van disfrutar molt! En Miquel va fer que la muntanya fos accessible i divertida per a tots. Perfecte per a famílies que volen descobrir la natura."',es:'"¡Nuestros hijos disfrutaron muchísimo! Miquel hizo que la montaña fuera accesible y divertida para todos. Perfecto para familias que quieren descubrir la naturaleza."',en:'"Our children loved it! Miquel made the mountain accessible and fun for everyone. Perfect for families who want to discover nature."',fr:'"Nos enfants ont adoré! Miquel a rendu la montagne accessible et amusante pour tous. Parfait pour les familles qui veulent découvrir la nature."',it:'"I nostri figli si sono divertiti tantissimo! Miquel ha reso la montagna accessibile e divertente per tutti. Perfetto per famiglie che vogliono scoprire la natura."'}},
+  {initials:'DG', name:'David García', role:{ca:'Team building d\'empresa',es:'Team building empresarial',en:'Corporate team building',fr:'Team building d\'entreprise',it:'Team building aziendale'}, stars:5, text:{ca:'"Vam contractar en Miquel per a un team building. Va ser increïble! Va crear cohesió al grup mentre ens desafiava físicament. Molt professional."',es:'"Contratamos a Miquel para un team building. ¡Fue increíble! Creó cohesión en el grupo mientras nos desafiaba físicamente. Muy profesional."',en:'"We hired Miquel for a team building event. It was incredible! He built group cohesion while challenging us physically. Very professional."',fr:'"Nous avons engagé Miquel pour un team building. C\'était incroyable! Il a créé de la cohésion dans le groupe tout en nous challengeant physiquement. Très professionnel."',it:'"Abbiamo assunto Miquel per un team building. È stato incredibile! Ha creato coesione nel gruppo sfidandoci fisicamente. Molto professionale."'}},
+  {initials:'MT', name:'Marta Torres', role:{ca:'Fotògrafa de natura',es:'Fotógrafa de naturaleza',en:'Nature photographer',fr:'Photographe de nature',it:'Fotografa naturalista'}, stars:5, text:{ca:'"En Miquel va organitzar una sortida perfecta per a la meva sessió de fotos. Va conèixer els millors llocs i moments. Un col·laborador excepcional."',es:'"Miquel organizó una salida perfecta para mi sesión de fotos. Conoció los mejores lugares y momentos. Un colaborador excepcional."',en:'"Miquel organised a perfect outing for my photo shoot. He knew the best spots and best moments. An exceptional collaborator."',fr:'"Miquel a organisé une sortie parfaite pour ma séance photo. Il connaissait les meilleurs endroits et moments. Un collaborateur exceptionnel."',it:'"Miquel ha organizzato un\'uscita perfetta per la mia sessione fotografica. Conosceva i posti migliori e i momenti migliori. Un collaboratore eccezionale."'}}
+];
+
+const faqData = [
+  {q:{ca:'Quin material he de portar?',es:'¿Qué material debo llevar?',en:'What equipment should I bring?',fr:'Quel matériel dois-je apporter?',it:'Che materiale devo portare?'},
+   a:{ca:'Es recomana portar roba còmoda i adequada per a la muntanya (capes), calçat de trekking amb bon grip, una motxilla amb mínim 2 litres d\'aigua per persona, snacks energètics, protecció solar i un impermeable lleuger. Jo sempre envio una llista detallada adaptada a cada sortida concreta.',es:'Se recomienda ropa cómoda y adecuada para la montaña (capas), calzado de trekking con buen grip, una mochila con mínimo 2 litros de agua por persona, snacks energéticos, protección solar e impermeable ligero. Siempre envío una lista detallada adaptada a cada salida concreta.',en:'Comfortable mountain-appropriate clothing (layers), trekking shoes with good grip, a backpack with at least 2 litres of water per person, energy snacks, sun protection and a light waterproof are recommended. I always send a detailed list tailored to each specific outing.',fr:'Vêtements confortables adaptés à la montagne (couches), chaussures de trekking à bonne adhérence, un sac à dos avec au moins 2 litres d\'eau par personne, des en-cas énergétiques, une protection solaire et un imperméable léger sont recommandés. J\'envoie toujours une liste détaillée adaptée à chaque sortie.',it:'Si consiglia abbigliamento comodo adatto alla montagna (strati), scarpe da trekking con buona aderenza, uno zaino con almeno 2 litri d\'acqua a persona, snack energetici, protezione solare e un impermeabile leggero. Invio sempre un elenco dettagliato adattato ad ogni uscita specifica.'}},
+  {q:{ca:'Qué passa si plou?',es:'¿Qué pasa si llueve?',en:'What happens if it rains?',fr:'Que se passe-t-il s\'il pleut?',it:'Cosa succede se piove?'},
+   a:{ca:'La seguretat és la prioritat absoluta. Si les condicions meteorològiques són adverses el dia de la sortida, t\'ofereixo dues opcions: (1) adaptar la ruta a un recorregut més curt i segur, o (2) reprogramar la sortida sense cap cost addicional. Monitoritzo els parts meteorològics 48-72h abans de cada activitat.',es:'La seguridad es la prioridad absoluta. Si las condiciones meteorológicas son adversas el día de la salida, te ofrezco dos opciones: (1) adaptar la ruta a un recorrido más corto y seguro, o (2) reprogramar la salida sin coste adicional. Monitorizo los partes meteorológicos 48-72h antes de cada actividad.',en:'Safety is the absolute priority. If weather conditions are adverse on the day of the outing, I offer two options: (1) adapt the route to a shorter, safer one, or (2) reschedule the outing at no extra cost. I monitor weather forecasts 48-72 hours before each activity.',fr:'La sécurité est la priorité absolue. Si les conditions météorologiques sont mauvaises le jour de la sortie, je propose deux options: (1) adapter l\'itinéraire à un parcours plus court et plus sûr, ou (2) reprogrammer la sortie sans frais supplémentaires. Je surveille les bulletins météo 48-72h avant chaque activité.',it:'La sicurezza è la priorità assoluta. Se le condizioni meteorologiche sono avverse il giorno dell\'uscita, offro due opzioni: (1) adattare il percorso a uno più breve e sicuro, o (2) riprogrammare l\'uscita senza costi aggiuntivi. Monitoro le previsioni del tempo 48-72 ore prima di ogni attività.'}},
+  {q:{ca:'És apte per a nens?',es:'¿Es apto para niños?',en:'Is it suitable for children?',fr:'Est-ce adapté aux enfants?',it:'È adatto ai bambini?'},
+   a:{ca:'Totalment! Ofereixo rutes específiques per a famílies amb nens a partir de 5 anys. Adapto la dificultat, la durada i el ritme segons l\'edat i les capacitats dels participants. Els nens aprenen a estimar la natura i viuen aventures que recorden tota la vida. Les famílies solen sorprendre\'s de fins on arriben els seus fills!',es:'¡Totalmente! Ofrezco rutas específicas para familias con niños a partir de 5 años. Adapto la dificultad, duración y ritmo según la edad y capacidades de los participantes. Los niños aprenden a amar la naturaleza y viven aventuras que recuerdan toda la vida. ¡Las familias suelen sorprenderse de hasta dónde llegan sus hijos!',en:'Absolutely! I offer specific routes for families with children from 5 years old. I adapt the difficulty, duration and pace according to the age and abilities of participants. Children learn to love nature and live adventures they remember for life. Families are often surprised by how far their children can go!',fr:'Absolument! Je propose des itinéraires spécifiques pour les familles avec enfants à partir de 5 ans. J\'adapte la difficulté, la durée et le rythme selon l\'âge et les capacités des participants. Les enfants apprennent à aimer la nature et vivent des aventures dont ils se souviendront toute leur vie. Les familles sont souvent surprises de la capacité de leurs enfants!',it:'Assolutamente! Offro percorsi specifici per famiglie con bambini dai 5 anni. Adatto la difficoltà, la durata e il ritmo in base all\'età e alle capacità dei partecipanti. I bambini imparano ad amare la natura e vivono avventure che ricordano per tutta la vita. Le famiglie sono spesso sorprese da dove riescono ad arrivare i loro figli!'}},
+  {q:{ca:'Quina és la mida màxima del grup?',es:'¿Cuál es el tamaño máximo del grupo?',en:'What is the maximum group size?',fr:'Quelle est la taille maximale du groupe?',it:'Qual è la dimensione massima del gruppo?'},
+   a:{ca:'Per garantir la qualitat i la seguretat, treballo amb grups de fins a 12 persones com a màxim. Per a grups més grans puc coordinar amb altres guies col·legues de confiança per mantenir la ràtio segura. Els grups petits (2-6 persones) reben una atenció molt més personalitzada i solen gaudir més de l\'experiència.',es:'Para garantizar la calidad y la seguridad, trabajo con grupos de hasta 12 personas como máximo. Para grupos más grandes puedo coordinar con otros guías colegas de confianza para mantener la ratio segura. Los grupos pequeños (2-6 personas) reciben una atención mucho más personalizada y suelen disfrutar más de la experiencia.',en:'To ensure quality and safety, I work with groups of up to 12 people maximum. For larger groups I can coordinate with trusted colleague guides to maintain a safe ratio. Small groups (2-6 people) receive much more personalised attention and usually enjoy the experience more.',fr:'Pour garantir la qualité et la sécurité, je travaille avec des groupes de 12 personnes maximum. Pour les groupes plus importants, je peux coordonner avec d\'autres guides collègues de confiance pour maintenir un ratio sûr. Les petits groupes (2-6 personnes) bénéficient d\'une attention beaucoup plus personnalisée.',it:'Per garantire qualità e sicurezza, lavoro con gruppi fino a 12 persone al massimo. Per gruppi più grandi posso coordinarmi con altri guide colleghi di fiducia per mantenere un rapporto sicuro. I piccoli gruppi (2-6 persone) ricevono un\'attenzione molto più personalizzata e di solito godono maggiormente dell\'esperienza.'}},
+  {q:{ca:'Cal experiència prèvia?',es:'¿Se necesita experiencia previa?',en:'Do I need previous experience?',fr:'Faut-il une expérience préalable?',it:'È necessaria esperienza precedente?'},
+   a:{ca:'No, en absolut. Tinc rutes per a tots els nivells: des de passejades fàcils per a principiants absoluts fins a ascensions tècniques per a experts. La meva feina és precisament adaptar-me al teu nivell i ajudar-te a progressar de forma segura i satisfactòria. L\'únic requisit és tenir ganes de gaudir de la natura!',es:'No, en absoluto. Tengo rutas para todos los niveles: desde paseos fáciles para principiantes absolutos hasta ascensiones técnicas para expertos. Mi trabajo es precisamente adaptarme a tu nivel y ayudarte a progresar de forma segura y satisfactoria. ¡El único requisito es tener ganas de disfrutar de la naturaleza!',en:'Not at all. I have routes for all levels: from easy walks for absolute beginners to technical ascents for experts. My job is precisely to adapt to your level and help you progress safely and satisfactorily. The only requirement is the desire to enjoy nature!',fr:'Pas du tout. J\'ai des itinéraires pour tous les niveaux: des promenades faciles pour les débutants absolus aux ascensions techniques pour les experts. Mon travail est précisément de m\'adapter à votre niveau et de vous aider à progresser de manière sûre et satisfaisante. La seule exigence est l\'envie de profiter de la nature!',it:'No, assolutamente. Ho percorsi per tutti i livelli: dalle passeggiate facili per principianti assoluti alle ascensioni tecniche per esperti. Il mio lavoro è precisamente adattarmi al tuo livello e aiutarti a progredire in modo sicuro e soddisfacente. L\'unico requisito è la voglia di godersi la natura!'}},
+  {q:{ca:'Com es fan les reserves i els pagaments?',es:'¿Cómo se hacen las reservas y los pagos?',en:'How are bookings and payments made?',fr:'Comment se font les réservations et paiements?',it:'Come si fanno le prenotazioni e i pagamenti?'},
+   a:{ca:'La reserva es fa per WhatsApp, correu electrònic o a través del formulari de contacte d\'aquesta web. Es confirma amb un senyal del 30% de l\'import total, i el romanent es paga el dia de l\'activitat en efectiu o per Bizum. Per a activitats corporatives s\'emet factura i s\'accepten transferències bancàries.',es:'La reserva se hace por WhatsApp, correo electrónico o a través del formulario de contacto de esta web. Se confirma con una señal del 30% del importe total, y el resto se paga el día de la actividad en efectivo o por Bizum. Para actividades corporativas se emite factura y se aceptan transferencias bancarias.',en:'Bookings are made via WhatsApp, email or through the contact form on this website. Confirmed with a 30% deposit of the total amount, with the balance paid on the day of the activity in cash or by Bizum. For corporate activities, invoices are issued and bank transfers are accepted.',fr:'Les réservations se font par WhatsApp, e-mail ou via le formulaire de contact de ce site. Confirmées avec un acompte de 30% du montant total, le solde est payé le jour de l\'activité en espèces ou par virement. Pour les activités d\'entreprise, des factures sont émises et les virements bancaires sont acceptés.',it:'Le prenotazioni si effettuano via WhatsApp, email o attraverso il modulo di contatto di questo sito. Confermate con un acconto del 30% dell\'importo totale, il saldo viene pagato il giorno dell\'attività in contanti o tramite Bizum. Per attività aziendali vengono emesse fatture e sono accettati bonifici bancari.'}}
+];
+
+const pricesData = [
+  {icon:'🥾',name:{ca:'Ruta Individual',es:'Ruta Individual',en:'Individual Route',fr:'Randonnée Individuelle',it:'Percorso Individuale'},price:45,unit:{ca:'persona / dia',es:'persona / día',en:'person / day',fr:'personne / jour',it:'persona / giorno'},desc:{ca:'Perfecte per a persones soles o parelles.',es:'Perfecto para personas solas o parejas.',en:'Perfect for solo walkers or couples.',fr:'Parfait pour les personnes seules ou les couples.',it:'Perfetto per singoli o coppie.'},features:{ca:['Ruta planificada a mida','Guia professional tot el dia','Material de seguretat inclòs','Segur d\'accidents inclòs'],es:['Ruta planificada a medida','Guía profesional todo el día','Material de seguridad incluido','Seguro de accidentes incluido'],en:['Tailored planned route','Professional guide all day','Safety equipment included','Accident insurance included'],fr:['Itinéraire planifié sur mesure','Guide professionnel toute la journée','Matériel de sécurité inclus','Assurance accidents incluse'],it:['Percorso pianificato su misura','Guida professionale tutto il giorno','Materiale di sicurezza incluso','Assicurazione infortuni inclusa']},featured:false,badge:null},
+  {icon:'👨‍👩‍👧‍👦',name:{ca:'Grup Petit',es:'Grupo Pequeño',en:'Small Group',fr:'Petit Groupe',it:'Piccolo Gruppo'},price:120,unit:{ca:'fins a 6 persones',es:'hasta 6 personas',en:'up to 6 people',fr:'jusqu\'à 6 personnes',it:'fino a 6 persone'},desc:{ca:'La millor opció per a famílies i amics.',es:'La mejor opción para familias y amigos.',en:'The best option for families and friends.',fr:'La meilleure option pour familles et amis.',it:'La migliore opzione per famiglie e amici.'},features:{ca:['Tot inclòs del pla individual','Atenció molt personalitzada','Adaptació al nivell del grup','Foto/vídeo de record inclosa'],es:['Todo incluido del plan individual','Atención muy personalizada','Adaptación al nivel del grupo','Foto/vídeo de recuerdo incluida'],en:['All individual plan inclusions','Highly personalised attention','Adapted to group level','Souvenir photo/video included'],fr:['Tout inclus du plan individuel','Attention très personnalisée','Adaptation au niveau du groupe','Photo/vidéo souvenir incluse'],it:['Tutto incluso del piano individuale','Attenzione molto personalizzata','Adattamento al livello del gruppo','Foto/video ricordo inclusa']},featured:true,badge:{ca:'POPULAR',es:'POPULAR',en:'POPULAR',fr:'POPULAIRE',it:'POPOLARE'}},
+  {icon:'🏢',name:{ca:'Corporatiu / Team Building',es:'Corporativo / Team Building',en:'Corporate / Team Building',fr:'Entreprise / Team Building',it:'Aziendale / Team Building'},price:280,unit:{ca:'fins a 12 persones',es:'hasta 12 personas',en:'up to 12 people',fr:'jusqu\'à 12 personnes',it:'fino a 12 persone'},desc:{ca:'Dinàmiques de grup i cohesió d\'equip.',es:'Dinámicas de grupo y cohesión de equipo.',en:'Group dynamics and team cohesion.',fr:'Dynamiques de groupe et cohésion d\'équipe.',it:'Dinamiche di gruppo e coesione del team.'},features:{ca:['Planificació d\'activitat corporativa','Dinàmiques de team building','Diploma de participació','Informe d\'equip post-activitat','Factura empresa inclosa'],es:['Planificación de actividad corporativa','Dinámicas de team building','Diploma de participación','Informe de equipo post-actividad','Factura empresa incluida'],en:['Corporate activity planning','Team building dynamics','Certificate of participation','Post-activity team report','Company invoice included'],fr:['Planification d\'activité d\'entreprise','Dynamiques de team building','Diplôme de participation','Rapport d\'équipe post-activité','Facture entreprise incluse'],it:['Pianificazione attività aziendale','Dinamiche di team building','Diploma di partecipazione','Rapporto di squadra post-attività','Fattura aziendale inclusa']},featured:false,badge:null},
+  {icon:'🚵',name:{ca:'BTT Tècnica',es:'BTT Técnica',en:'Technical MTB',fr:'VTT Technique',it:'MTB Tecnica'},price:55,unit:{ca:'persona / sortida',es:'persona / salida',en:'person / outing',fr:'personne / sortie',it:'persona / uscita'},desc:{ca:'Per a ciclistes de muntanya de tots els nivells.',es:'Para ciclistas de montaña de todos los niveles.',en:'For mountain cyclists of all levels.',fr:'Pour les cyclistes de montagne de tous niveaux.',it:'Per ciclisti di montagna di tutti i livelli.'},features:{ca:['Ruta BTT personalitzada','Revisió mecànica bàsica inclosa','Guia amb experiència en BTT','Material de seguretat i primers auxilis'],es:['Ruta BTT personalizada','Revisión mecánica básica incluida','Guía con experiencia en BTT','Material de seguridad y primeros auxilios'],en:['Personalised MTB route','Basic mechanical check included','Guide with MTB experience','Safety equipment and first aid'],fr:['Itinéraire VTT personnalisé','Révision mécanique de base incluse','Guide avec expérience VTT','Matériel de sécurité et premiers secours'],it:['Percorso MTB personalizzato','Revisione meccanica di base inclusa','Guida con esperienza MTB','Materiale di sicurezza e primo soccorso']},featured:false,badge:null}
+];
+
+// ══════════════════════════════════════════════
+// RENDER FUNCTIONS
+// ══════════════════════════════════════════════
+function renderTestimonials() {
+  const c = document.getElementById('testimonials-container');
+  if (!c) return;
+  c.innerHTML = testimonialsData.map((t,i) => `
+    <div class="testimonial-card">
+      <div class="testimonial-header">
+        <div class="avatar">${t.initials}</div>
+        <div class="avatar-info"><h4>${t.name}</h4><p>${t.role[lang]||t.role.ca}</p></div>
+      </div>
+      <div class="stars">${'★'.repeat(t.stars)}${'☆'.repeat(5-t.stars)}</div>
+      <div class="testimonial-text">${t.text[lang]||t.text.ca}</div>
+    </div>`).join('');
+  renderTestimonialsAdmin();
+}
+
+function renderFaq() {
+  const c = document.getElementById('faq-container');
+  if (!c) return;
+  c.innerHTML = faqData.map((f,i) => `
+    <div class="faq-item" id="faq-${i}">
+      <div class="faq-q" onclick="toggleFaq(${i})">
+        <span>${f.q[lang]||f.q.ca}</span>
+        <i class="fa-solid fa-chevron-down"></i>
+      </div>
+      <div class="faq-a"><p>${f.a[lang]||f.a.ca}</p></div>
+    </div>`).join('');
+  renderFaqAdmin();
+}
+
+function renderPrices() {
+  const c = document.getElementById('pricing-container');
+  if (!c) return;
+  c.innerHTML = pricesData.map(p => `
+    <div class="price-card${p.featured?' featured':''}"${p.badge?' data-badge="'+p.badge[lang]+'"':''}>
+      <div class="price-icon">${p.icon}</div>
+      <div class="price-name">${p.name[lang]||p.name.ca}</div>
+      <div class="price-amount">${p.price}€ <small>/ ${p.unit[lang]||p.unit.ca}</small></div>
+      <div class="price-desc">${p.desc[lang]||p.desc.ca}</div>
+      <ul class="price-features">${(p.features[lang]||p.features.ca).map(f=>`<li><i class="fa-solid fa-check"></i>${f}</li>`).join('')}</ul>
+    </div>`).join('');
+  renderPricesAdmin();
+}
+
+function renderTestimonialsAdmin() {
+  const c = document.getElementById('testimonials-admin-list');
+  if (!c) return;
+  c.innerHTML = testimonialsData.map((t,i) => `
+    <div class="test-item">
+      <div>
+        <div class="test-name">${t.name}</div>
+        <div class="test-stars">${'★'.repeat(t.stars)}</div>
+        <div class="test-preview">${(t.text.ca||'').substring(1,70)}...</div>
+      </div>
+      <button class="btn-danger" onclick="removeTestimonial(${i})"><i class="fa-solid fa-trash"></i></button>
+    </div>`).join('');
+}
+
+function renderFaqAdmin() {
+  const c = document.getElementById('faq-admin-list');
+  if (!c) return;
+  c.innerHTML = faqData.map((f,i) => `
+    <div class="test-item">
+      <div style="flex:1">
+        <div class="test-name" style="font-size:0.88rem">${f.q.ca}</div>
+        <div class="test-preview">${(f.a.ca||'').substring(0,80)}...</div>
+      </div>
+      <button class="btn-danger" onclick="removeFaq(${i})"><i class="fa-solid fa-trash"></i></button>
+    </div>`).join('');
+}
+
+function renderPricesAdmin() {
+  const c = document.getElementById('prices-admin-list');
+  if (!c) return;
+  c.innerHTML = pricesData.map((p,i) => `
+    <div class="test-item">
+      <div style="flex:1">
+        <div class="test-name">${p.icon} ${p.name.ca}</div>
+        <div class="test-preview" style="color:var(--text-accent)">${p.price}€ / ${p.unit.ca}</div>
+        <div class="test-preview">${p.desc.ca}</div>
+      </div>
+      <button class="btn-save" style="padding:7px 14px;font-size:0.8rem" onclick="toast('✏️ Edició de preus en mode demo')"><i class="fa-solid fa-pen"></i></button>
+    </div>`).join('');
+}
+
+function renderProjectsAdmin() {
+  const c = document.getElementById('projects-admin-list');
+  if (!c) return;
+  const projs = ['Pràctiques al Ginebró','Disseny de Rutes al Montseny','Sortida Tècnica BTT'];
+  c.innerHTML = projs.map((p,i) => `
+    <div class="test-item">
+      <div style="flex:1"><div class="test-name">${p}</div></div>
+      <button class="btn-danger" onclick="toast('🗑️ Funció demo')"><i class="fa-solid fa-trash"></i></button>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// DATA MANIPULATION
+// ══════════════════════════════════════════════
+function addTestimonial() {
+  const name = document.getElementById('new-test-name').value.trim();
+  const role = document.getElementById('new-test-role').value.trim();
+  const stars = parseInt(document.getElementById('new-test-stars').value);
+  const text = document.getElementById('new-test-text').value.trim();
+  if (!name || !text) { toast('⚠️ Omple el nom i el comentari'); return; }
+  const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().substring(0,2);
+  const roleObj = {ca:role,es:role,en:role,fr:role,it:role};
+  const textObj = {ca:`"${text}"`,es:`"${text}"`,en:`"${text}"`,fr:`"${text}"`,it:`"${text}"`};
+  testimonialsData.push({initials,name,role:roleObj,stars,text:textObj});
+  renderTestimonials();
+  document.getElementById('new-test-name').value='';
+  document.getElementById('new-test-role').value='';
+  document.getElementById('new-test-text').value='';
+  toast('✅ Testimoni afegit!');
+}
+function removeTestimonial(i) { testimonialsData.splice(i,1); renderTestimonials(); toast('🗑️ Testimoni eliminat'); }
+
+function addFaq() {
+  const q = document.getElementById('new-faq-q').value.trim();
+  const a = document.getElementById('new-faq-a').value.trim();
+  if (!q || !a) { toast('⚠️ Omple la pregunta i la resposta'); return; }
+  const qObj={ca:q,es:q,en:q,fr:q,it:q};
+  const aObj={ca:a,es:a,en:a,fr:a,it:a};
+  faqData.push({q:qObj,a:aObj});
+  renderFaq();
+  document.getElementById('new-faq-q').value='';
+  document.getElementById('new-faq-a').value='';
+  toast('✅ Pregunta afegida!');
+}
+function removeFaq(i) { faqData.splice(i,1); renderFaq(); toast('🗑️ Pregunta eliminada'); }
+
+function addProject() {
+  const title = document.getElementById('new-proj-title').value.trim();
+  if (!title) { toast('⚠️ Escriu el títol del projecte'); return; }
+  document.getElementById('new-proj-title').value='';
+  document.getElementById('new-proj-desc').value='';
+  document.getElementById('new-proj-role').value='';
+  toast('✅ Projecte afegit! (Mode demo: no persisteix)');
+  renderProjectsAdmin();
+}
+
+// ══════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════
+let mapInited = false;
+function openTab(e,id) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  e.currentTarget.classList.add('active');
+  if (id==='mapa' && !mapInited) { setTimeout(initMap,200); mapInited=true; }
+  if (id==='sobre') {
+    setTimeout(()=>{
+      document.querySelectorAll('.skill-fill').forEach(s=>s.style.width=s.style.getPropertyValue('--w'));
+    },200);
+  }
+}
+
+// ══════════════════════════════════════════════
+// MAP
+// ══════════════════════════════════════════════
+function initMap() {
+  const map = L.map('map',{zoomControl:true}).setView([41.7906,2.4544],11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
+  const locs=[
+    {t:'Turó de l\'Home',lat:41.8044,lng:2.4733,d:'Projecte 1: Pràctiques al Ginebró — Zona alta del Montseny'},
+    {t:'Montseny',lat:41.7906,lng:2.4544,d:'Projecte 2: Disseny de Rutes — Parc Natural del Montseny'},
+    {t:'Sant Celoni',lat:41.7567,lng:2.3928,d:'Base d\'operacions i sortides al peu del Montseny'},
+    {t:'Matagalls',lat:41.8342,lng:2.4467,d:'Cim icònic del Montseny — Rutes avançades'}
+  ];
+  locs.forEach(l=>{
+    L.marker([l.lat,l.lng]).addTo(map)
+      .bindPopup(`<strong style="color:#2d5a27">${l.t}</strong><br><small>${l.d}</small>`);
+  });
+}
+
+// ══════════════════════════════════════════════
+// LIGHTBOX
+// ══════════════════════════════════════════════
+function openLightbox(img) {
+  document.getElementById('lb-img').src = img.src;
+  document.getElementById('lightbox').classList.add('show');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('show'); }
+
+// ══════════════════════════════════════════════
+// FAQ TOGGLE
+// ══════════════════════════════════════════════
+function toggleFaq(i) {
+  const item = document.getElementById('faq-'+i);
+  item.classList.toggle('open');
+}
+
+// ══════════════════════════════════════════════
+// CONTACT FORM
+// ══════════════════════════════════════════════
+function submitForm() {
+  const nom = document.getElementById('cf-nom').value.trim();
+  const email = document.getElementById('cf-email').value.trim();
+  const assumpte = document.getElementById('cf-assumpte').value.trim();
+  const missatge = document.getElementById('cf-missatge').value.trim();
+  if (!nom||!email||!missatge) { toast('⚠️ Omple els camps obligatoris (*)'); return; }
+  
+  const msgs = JSON.parse(localStorage.getItem('mg_messages')||'[]');
+  msgs.push({nom,email,assumpte,missatge,date:new Date().toLocaleString('ca-ES'),read:false});
+  localStorage.setItem('mg_messages',JSON.stringify(msgs));
+  
+  document.getElementById('cf-nom').value='';
+  document.getElementById('cf-email').value='';
+  document.getElementById('cf-assumpte').value='';
+  document.getElementById('cf-missatge').value='';
+  toast('✅ Missatge enviat! Et respondré aviat.');
+  updateMsgBadge();
+}
+
+// ══════════════════════════════════════════════
+// MESSAGES
+// ══════════════════════════════════════════════
+function updateMsgBadge() {
+  const msgs = JSON.parse(localStorage.getItem('mg_messages')||'[]');
+  const unread = msgs.filter(m=>!m.read).length;
+  const badge = document.getElementById('msg-badge');
+  const statEl = document.getElementById('sm');
+  if (statEl) statEl.textContent = msgs.length;
+  if (badge) { badge.textContent=unread; badge.style.display=unread>0?'flex':'none'; }
+}
+
+function renderMessages() {
+  const msgs = JSON.parse(localStorage.getItem('mg_messages')||'[]');
+  const c = document.getElementById('messages-list');
+  if (!c) return;
+  if (msgs.length===0) { c.innerHTML='<p style="color:var(--text-secondary)">Encara no hi ha missatges rebuts.</p>'; return; }
+  c.innerHTML = msgs.map((m,i) => `
+    <div class="msg-item${m.read?'':' unread'}">
+      <div class="msg-header"><span class="msg-from">${m.nom} &lt;${m.email}&gt;</span><span class="msg-date">${m.date}</span></div>
+      <div class="msg-subject"><strong>${m.assumpte||'(Sense assumpte)'}</strong></div>
+      <div class="msg-preview">${m.missatge.substring(0,150)}${m.missatge.length>150?'...':''}</div>
+      <div class="msg-actions">
+        <button class="btn-reply" onclick="markRead(${i})"><i class="fa-solid fa-check"></i> Marcar llegit</button>
+        <button class="btn-delete" onclick="deleteMsg(${i})"><i class="fa-solid fa-trash"></i> Eliminar</button>
+      </div>
+    </div>`).reverse().join('');
+}
+function markRead(i) {
+  const msgs = JSON.parse(localStorage.getItem('mg_messages')||'[]');
+  if (msgs[i]) msgs[i].read=true;
+  localStorage.setItem('mg_messages',JSON.stringify(msgs));
+  renderMessages(); updateMsgBadge(); toast('✅ Marcat com a llegit');
+}
+function deleteMsg(i) {
+  const msgs = JSON.parse(localStorage.getItem('mg_messages')||'[]');
+  msgs.splice(i,1);
+  localStorage.setItem('mg_messages',JSON.stringify(msgs));
+  renderMessages(); updateMsgBadge(); toast('🗑️ Missatge eliminat');
+}
+
+// ══════════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════════
+const ADMIN_U = '2009mt', ADMIN_P = 'miquel2009mt';
+let isAdmin = false, sessionStart = Date.now(), sessionTimer;
+
+function openAdminLogin() {
+  if (isAdmin) { document.getElementById('admin-panel').classList.add('show'); return; }
+  document.getElementById('admin-overlay').classList.add('show');
+  setTimeout(()=>document.getElementById('admin-user').focus(),300);
+}
+function closeAdminLogin() {
+  document.getElementById('admin-overlay').classList.remove('show');
+  document.getElementById('admin-user').value='';
+  document.getElementById('admin-pw').value='';
+  document.getElementById('login-err').style.display='none';
+}
+function checkLogin() {
+  const u=document.getElementById('admin-user').value;
+  const p=document.getElementById('admin-pw').value;
+  if (u===ADMIN_U&&p===ADMIN_P) {
+    isAdmin=true; closeAdminLogin();
+    document.getElementById('admin-panel').classList.add('show');
+    document.getElementById('admin-badge').classList.add('show');
+    sessionStart=Date.now();
+    updateStats();
+    renderMessages(); renderProjectsAdmin();
+    sessionTimer=setInterval(updateSessionTime,60000);
+  } else {
+    document.getElementById('login-err').style.display='block';
+    document.getElementById('admin-user').value='';
+    document.getElementById('admin-pw').value='';
+    document.getElementById('admin-user').focus();
+  }
+}
+function logoutAdmin() {
+  isAdmin=false;
+  document.getElementById('admin-panel').classList.remove('show');
+  document.getElementById('admin-badge').classList.remove('show');
+  clearInterval(sessionTimer);
+  toast('👋 Sessió tancada correctament');
+}
+
+function showSection(name, el) {
+  document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.sidebar-link').forEach(l=>l.classList.remove('active'));
+  document.getElementById('s-'+name).classList.add('active');
+  if (el) el.classList.add('active');
+  if (name==='missatges') renderMessages();
+  if (name==='testimonials-admin') renderTestimonialsAdmin();
+  if (name==='faq-admin') renderFaqAdmin();
+  if (name==='preus-admin') renderPricesAdmin();
+  if (name==='projectes') renderProjectsAdmin();
+}
+
+function updateStats() {
+  const visits = parseInt(localStorage.getItem('mg_visits')||'0');
+  document.getElementById('sv').textContent = visits;
+  updateMsgBadge();
+  updateSessionTime();
+}
+function updateSessionTime() {
+  const mins = Math.floor((Date.now()-sessionStart)/60000);
+  const el=document.getElementById('st');
+  if(el) el.textContent = mins+'m';
+}
+
+function saveHeader() {
+  document.getElementById('site-name').textContent = document.getElementById('edit-name').value;
+  document.querySelector('[data-i="subtitle"]').textContent = document.getElementById('edit-subtitle').value;
+  document.querySelector('[data-i="quote"]').textContent = document.getElementById('edit-quote').value;
+  toast('✅ Capçalera actualitzada!');
+}
+function saveAbout() { toast('✅ "Sobre Mi" actualitzat!'); }
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+let toastTimer;
+function toast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.display='block';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.style.display='none',3200);
+}
+
+// ══════════════════════════════════════════════
+// VISIT COUNTER
+// ══════════════════════════════════════════════
+const v = parseInt(localStorage.getItem('mg_visits')||'0')+1;
+localStorage.setItem('mg_visits',v);
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', ()=>{
+  renderTestimonials();
+  renderFaq();
+  renderPrices();
+  updateMsgBadge();
+  // Skill bars on load for active tab
+  document.querySelectorAll('.skill-fill').forEach(s=>{ if(document.getElementById('sobre').classList.contains('active')) s.style.width=s.style.getPropertyValue('--w'); });
+});
+</script>
+</body>
+</html>
